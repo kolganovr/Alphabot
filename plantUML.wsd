@@ -1,0 +1,59 @@
+@startuml Alphabot
+enum Action{
+    FORWARD
+    BACKWARD
+    LEFT
+    RIGHT
+    CLEAN
+}
+
+class Alphabot {
+    -engineStarted: boolean
+    -engineController: EngineController
+    -cleaner: Cleaner
+    -posX: int
+    -posY: int
+    -target: Graffiti
+    +startEngine(): void
+    +stopEngine(): void
+    +chooseDir(curTarget: Graffiti): Action
+    +doAction(action: Action, time: int): void
+}
+
+class EngineController{
+    +moveForward(time: int): void
+    +moveBackwards(time: int): void
+    +moveLeft(time: int): void
+    +moveRight(time: int): void
+}
+
+class Cleaner {
+    +perform(): void
+}
+
+class Camera {
+    +sendToServer(): void
+}
+
+class Server {
+    -searchForGraffiti(): Graffiti
+    +receiveMessage(): void
+    +sendMessage(Graffiti: Graffiti): void
+}
+
+class Graffiti{
+    -exist: boolean
+    -posX: int
+    -posY: int
+    +Graffiti(x: int, y: int)
+    +getPosX(): int
+    +getPosY(): int
+}
+EngineController --* Alphabot
+Cleaner --* Alphabot
+Graffiti --* Alphabot
+Action --> Alphabot
+Graffiti --> Server
+Camera -> Server
+Server -> Alphabot
+@enduml
