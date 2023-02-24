@@ -30,12 +30,12 @@ public:
     void sendToServer();
 };
 
-class Graffity{
+class Graffiti{
     bool exist = false;
     int posX;
     int posY;
 public:
-    Graffity(int x, int y)
+    Graffiti(int x, int y)
     {
         posX = x;
         posY = y;
@@ -48,10 +48,10 @@ public:
 class Server
 {
 private:
-    Graffity searchForGraffity(){}
+    Graffiti searchForGraffiti(){}
 public:
     void receiveMessage();
-    void sendMessage(Graffity graffity);
+    void sendMessage(Graffiti graffiti);
 };
 
 class Alphabot
@@ -62,9 +62,9 @@ private:
     Cleaner cleaner;
     int posX;
     int posY;
-    Graffity target;
+    Graffiti target;
 
-    Action chooseDir(Graffity curTarget) {}
+    Action chooseDir(Graffiti curTarget) {}
     void doAction(Action action, int time)
     {
         switch (action)
