@@ -50,4 +50,4 @@
 ![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/KTC.png)
 
 ## UML
-![UML](https://github.com/kolganovr/Alphabot/raw/main/plantUML.wsd)
+![UML](https://github.com/kolganovr/Alphabot/raw/main/UML.png)
