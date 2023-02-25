@@ -57,5 +57,5 @@ Graffiti --* Alphabot
 Action --> Alphabot
 Graffiti --> Server
 Camera -> Server
-Server -> Alphabot
+Server *- Alphabot
 @enduml
