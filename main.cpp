@@ -63,20 +63,6 @@ public:
     int getPosY() { return posY; }
 };
 
-// This class represents the server that is used to communicate between the robot and the camera.
-class Server
-{
-private:
-    /// Searching for Graffiti positions
-    /// @return Graffiti object
-    Graffiti searchForGraffiti(){}
-public:
-    // Receives messages from the user.
-    void receiveMessage();
-    // Sends messages to the user.
-    void sendMessage(Graffiti graffiti);
-};
-
 class Alphabot
 {
 private:
@@ -117,6 +103,11 @@ private:
         }
     }
 public:
+    /// gets a messsage from the Server
+    /// @param target graffity object robot needs to go to
+    void recieveMessage(Graffiti graffiti){
+        target = graffiti;
+    }
     void startEngine()
     {
         engineStarted = true;
@@ -125,4 +116,19 @@ public:
     {
         engineStarted = false;
     }
+};
+
+// This class represents the server that is used to communicate between the robot and the camera.
+class Server
+{
+private:
+    Alphabot alphabot;
+    /// Searching for Graffiti positions
+    /// @return Graffiti object
+    Graffiti searchForGraffiti();
+public:
+    // Receives messages from the user.
+    void receiveMessage();
+    // Sends messages to the user.
+    void sendMessage(Graffiti graffiti);
 };

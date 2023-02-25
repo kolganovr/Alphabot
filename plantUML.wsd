@@ -14,10 +14,11 @@ class Alphabot {
     -posX: int
     -posY: int
     -target: Graffiti
+    -chooseAction(curTarget: Graffiti): Action
+    -doAction(action: Action, time: int): void
+    +recieveMessage(graffiti: Graffiti): void
     +startEngine(): void
     +stopEngine(): void
-    +chooseAction(curTarget: Graffiti): Action
-    +doAction(action: Action, time: int): void
 }
 
 class EngineController{
@@ -36,6 +37,7 @@ class Camera {
 }
 
 class Server {
+    -alphabot: Alphabot
     -searchForGraffiti(): Graffiti
     +receiveMessage(): void
     +sendMessage(Graffiti: Graffiti): void
