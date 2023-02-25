@@ -16,7 +16,7 @@ class Alphabot {
     -target: Graffiti
     +startEngine(): void
     +stopEngine(): void
-    +chooseDir(curTarget: Graffiti): Action
+    +chooseAction(curTarget: Graffiti): Action
     +doAction(action: Action, time: int): void
 }
 

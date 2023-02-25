@@ -1,5 +1,6 @@
 #include <iostream>
 
+// This enum represents the actions that the Alphabot can perform.
 enum Action
 {
     FORWARD,
@@ -9,63 +10,90 @@ enum Action
     CLEAN
 };
 
+// This class is used to control the movement of the robot.
 class EngineController
 {
 public:
+    // Moves the robot forward for the specified time.
     void moveForward(int time);
+    // Moves the robot backwards for the specified time.
     void moveBackwards(int time);
+    // Moves the robot left for the specified time.
     void moveLeft(int time);
+    // Moves the robot right for the specified time.
     void moveRight(int time);
 };
 
+// This class is used to control the cleaning ability of robot.
 class Cleaner
 {
 public:
+    // Performs the cleaning action.
     void perform();
 };
 
+// Class for getting the image and transfering it to server.
 class Camera
 {   
 public:
-    void sendToServer();
+    // Sends the image to the server.
+    void sendToServer(); 
 };
 
+// This class represents a graffiti
+// It has a position and a boolean that tells if it exists or not
 class Graffiti{
-    bool exist = false;
-    int posX;
-    int posY;
+    bool exist = false; // Does graffiti exist
+    int posX; // X position of graffiti
+    int posY; // Y position of graffiti
 public:
+    // Constructor
     Graffiti(int x, int y)
     {
         posX = x;
         posY = y;
         exist = true;
     }
+    
+    /// Returns X position of graffiti
+    /// @return position (0 is Left side (example!) )
     int getPosX() { return posX; }
+    /// Returns Y position of graffiti
+    /// @return position (0 is Down side (example!) )
     int getPosY() { return posY; }
 };
 
+// This class represents the server that is used to communicate between the robot and the camera.
 class Server
 {
 private:
+    /// Searching for Graffiti positions
+    /// @return Graffiti object
     Graffiti searchForGraffiti(){}
 public:
+    // Receives messages from the user.
     void receiveMessage();
+    // Sends messages to the user.
     void sendMessage(Graffiti graffiti);
 };
 
 class Alphabot
 {
 private:
-    bool engineStarted;
+    bool engineStarted; 
     EngineController engineController;
     Cleaner cleaner;
-    int posX;
-    int posY;
-    Graffiti target;
+    int posX; // Current X coordinate
+    int posY; // Current Y coordinate
+    Graffiti target; // Current graffiti target
 
-    Action chooseDir(Graffiti curTarget) {}
-    void doAction(Action action, int time)
+    /// Choosing Actiion based on Graffiti pos 
+    /// @param curTarget object we are heading to
+    /// @return Chosed Action
+    Action chooseAction(Graffiti curTarget);
+
+    // Move robot, or clean graffiti.
+    void doAction(Action action, int time) 
     {
         switch (action)
         {
