@@ -28,9 +28,15 @@ while True:
         lower_purple = convert_hsv((300, 30, 30))
         upper_purple = convert_hsv((350, 100, 100))
 
-        # Применяем функцию inRange для фильтрации фиолетового цвета
-        mask = cv2.inRange(hsv, lower_purple, upper_purple)
-        
+        # Задем границы для синего двета в HSV hsl(200, 79%, 49%)
+        lower_blue = convert_hsv((180, 50, 30))
+        upper_blue = convert_hsv((220, 100, 100))
+
+        # Применяем функцию inRange для фильтрации фиолетового и синего цвета
+        maskPurple = cv2.inRange(hsv, lower_purple, upper_purple)
+        maskBlue = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        mask = cv2.bitwise_or(maskBlue, maskPurple)
         # Накладываем маску на исходный кадр
         result = cv2.bitwise_and(frame, frame, mask=mask)
         # Показываем результат на экране
