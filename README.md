@@ -47,7 +47,7 @@
 4. `doAction` с помощью одно из классов `EngineController` или `Cleaner` выполняет поставленное действие
 
 ## Схема КТС
-![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/KTC.png)
+![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/docs/KTC.png)
 
 ## UML
 ![UML](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/main/plantUML.wsd)
