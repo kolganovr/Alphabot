@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <math.h>
+#include <tuple>
 
 using namespace cv;
 using namespace std;
@@ -50,10 +51,32 @@ double angle_between_centers(int cx_purple, int cy_purple, int cx_blue, int cy_b
     return round(angle_deg * 100) / 100;
 }
 
+tuple <Mat, Mat> getImage(VideoCapture cap)
+{
+    // Считываем кадр
+    Mat frame;
+    cap.read(frame);
+
+    // Переводим кадр в HSV
+    Mat hsv;
+    cvtColor(frame, hsv, COLOR_BGR2HSV);
+
+    // Возвращаем HSV и frame
+    return make_tuple(hsv, frame);
+}
+
+void ReleaseCap(VideoCapture cap){
+    // Освобождаем ресурсы и закрываем окна
+    cap.release();
+    destroyAllWindows();
+}
+
 int main()
 {
-    // Создаем VideoCapture объект для считывания данных с камеры
     VideoCapture cap(0);
+    // Задаём размеры изображения
+    cap.set(CAP_PROP_FRAME_WIDTH, 640);
+    cap.set(CAP_PROP_FRAME_HEIGHT, 480);
 
     // Проверяем, удалось ли открыть камеру
     if (!cap.isOpened())
@@ -65,16 +88,12 @@ int main()
     // Создаем окна для отображения исходного кадра и фильтрованного
     namedWindow("Original", WINDOW_NORMAL);
     namedWindow("Filtered", WINDOW_NORMAL);
-
     while (true)
     {
-        // Считываем кадр
-        Mat frame;
-        cap.read(frame);
-
-        // Переводим кадр в HSV
-        Mat hsv;
-        cvtColor(frame, hsv, COLOR_BGR2HSV);
+        // Получаем HSV и frame
+        tuple <Mat, Mat> image = getImage(cap);
+        Mat hsv = get<0>(image);
+        Mat frame = get<1>(image);
 
         // Уставнавливаем нижнюю и верхнюю границу цветов маркера
         Scalar lower_purple = convert_hsv(Scalar(300, 30, 30));
@@ -108,10 +127,10 @@ int main()
         {
             // Находим контур с максимальной площадью
             auto max_contour = max_element(contoursPurple.begin(), contoursPurple.end(),
-                                                [](const auto &a, const auto &b)
-                                                {
-                                                    return contourArea(a) < contourArea(b);
-                                                });
+                                           [](const auto &a, const auto &b)
+                                           {
+                                               return contourArea(a) < contourArea(b);
+                                           });
             // Если контур больше минимального значения
             if (contourArea(*max_contour) > MIN_CONTOUR_AREA)
             {
@@ -135,10 +154,10 @@ int main()
         {
             // Находим контур с максимальной площадью
             auto max_contour = max_element(contoursBlue.begin(), contoursBlue.end(),
-                                                [](const auto &a, const auto &b)
-                                                {
-                                                    return contourArea(a) < contourArea(b);
-                                                });
+                                           [](const auto &a, const auto &b)
+                                           {
+                                               return contourArea(a) < contourArea(b);
+                                           });
             // Если контур больше минимального значения
             if (contourArea(*max_contour) > MIN_CONTOUR_AREA)
             {
@@ -167,7 +186,7 @@ int main()
             double angle = angle_between_centers(cx_purple, cy_purple, cx_blue, cy_blue);
             putText(result, to_string(angle), Point(cx_blue, cy_blue), FONT_HERSHEY_SIMPLEX, 1, Scalar(256, 256, 256), 2);
         }
-    
+
         // Показываем результат на экране
         imshow("Original", frame);
         imshow("Filtered", result);
@@ -175,9 +194,7 @@ int main()
         // При нажатии на esc выходим
         if (waitKey(1) == 27)
             break;
-        }
-    
-    // Освобождаем ресурсы и закрываем окна
-    cap.release();
-    destroyAllWindows();
+    }
+
+    ReleaseCap(cap);
 }
