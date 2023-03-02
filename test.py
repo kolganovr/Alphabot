@@ -1,6 +1,8 @@
 import cv2
 import math
 
+MIN_CONTOUR_AREA = 250
+
 def convert_hsv(hsv):
     # Разбиваем hsv на отдельные компоненты
     h, s, v = hsv
@@ -74,13 +76,14 @@ while True:
         if len(contoursPurple) > 0:
             # Находим контур с максимальной площадью
             max_contour = max(contoursPurple, key=cv2.contourArea)
-            # Находим координаты центра масс контура
-            M = cv2.moments(max_contour)
-            if M["m00"] != 0:
-                cx_purple = int(M["m10"] / M["m00"])
-                cy_purple = int(M["m01"] / M["m00"])
-                # Рисуем маленький красный круг в центре масс контура
-                cv2.circle(result, (cx_purple, cy_purple), 10, (0, 0, 255), -1)
+            if cv2.contourArea(max_contour) > MIN_CONTOUR_AREA:
+                # Находим координаты центра масс контура
+                M = cv2.moments(max_contour)
+                if M["m00"] != 0:
+                    cx_purple = int(M["m10"] / M["m00"])
+                    cy_purple = int(M["m01"] / M["m00"])
+                    # Рисуем маленький красный круг в центре масс контура
+                    cv2.circle(result, (cx_purple, cy_purple), 10, (0, 0, 255), -1)
 
         # Поиск контуров объектов на маске с фильтрованным синим цветом
         contoursBlue, _ = cv2.findContours(maskBlue, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -88,13 +91,14 @@ while True:
         if len(contoursBlue) > 0:
             # Находим контур с максимальной площадью
             max_contour = max(contoursBlue, key=cv2.contourArea)
-            # Находим координаты центра масс контура
-            M = cv2.moments(max_contour)
-            if M["m00"] != 0:
-                cx_blue = int(M["m10"] / M["m00"])
-                cy_blue = int(M["m01"] / M["m00"])
-                # Рисуем маленький красный круг в центре масс контура
-                cv2.circle(result, (cx_blue, cy_blue), 10, (256, 0, 0), -1)
+            if cv2.contourArea(max_contour) > MIN_CONTOUR_AREA:
+                # Находим координаты центра масс контура
+                M = cv2.moments(max_contour)
+                if M["m00"] != 0:
+                    cx_blue = int(M["m10"] / M["m00"])
+                    cy_blue = int(M["m01"] / M["m00"])
+                    # Рисуем маленький красный круг в центре масс контура
+                    cv2.circle(result, (cx_blue, cy_blue), 10, (256, 0, 0), -1)
 
         if len(contoursPurple) > 0 and len(contoursBlue) > 0:
             # Рисуем вертикальную белую линию через центр масс синего цвета
