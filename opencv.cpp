@@ -5,6 +5,7 @@ using namespace cv;
 using namespace std;
 
 #define MIN_CONTOUR_AREA 250
+#define M_PI 3.1416
 
 Scalar convert_hsv(Scalar hsv)
 {
