@@ -56,6 +56,6 @@ Cleaner --* Alphabot
 Graffiti --* Alphabot
 Action --> Alphabot
 Graffiti --> Server
-Camera -> Server
+Camera -* Server
 Server *- Alphabot
 @enduml

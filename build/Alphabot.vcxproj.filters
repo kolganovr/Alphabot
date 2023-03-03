@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\Coding\CPP\Alphabot\opencv.cpp">
+    <ClCompile Include="D:\Coding\CPP\Alphabot\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
