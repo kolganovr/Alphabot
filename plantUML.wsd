@@ -1,5 +1,5 @@
 @startuml Alphabot
-enum Action{
+enum Action {
     FORWARD
     BACKWARD
     LEFT
@@ -7,49 +7,64 @@ enum Action{
     CLEAN
 }
 
-class Alphabot {
-    -engineStarted: boolean
-    -engineController: EngineController
-    -cleaner: Cleaner
-    -posX: int
-    -posY: int
-    -target: Graffiti
-    -chooseAction(curTarget: Graffiti): Action
-    -doAction(action: Action, time: int): void
-    +recieveMessage(graffiti: Graffiti): void
-    +startEngine(): void
-    +stopEngine(): void
-}
-
-class EngineController{
-    +moveForward(time: int): void
-    +moveBackwards(time: int): void
-    +moveLeft(time: int): void
-    +moveRight(time: int): void
+class EngineController {
+    + moveForward(int time)
+    + moveBackwards(int time)
+    + moveLeft(int time)
+    + moveRight(int time)
 }
 
 class Cleaner {
-    +perform(): void
+    + perform()
 }
 
 class Camera {
-    +sendToServer(): void
+    - cap: VideoCapture
+    - getImage(): tuple<Mat, Mat>
+    + sendToServer(): tuple<Mat, Mat>
+}
+
+class Graffiti {
+    - exist: bool
+    - posX: int
+    - posY: int
+    + getPosX(): int
+    + getPosY(): int
+    + Graffiti()
+    + Graffiti(int x, int y)
+}
+
+class Alphabot {
+    - engineStarted: bool
+    - engineController: EngineController
+    - cleaner: Cleaner
+    - posX: int
+    - posY: int
+    - target: Graffiti
+    + recieveMessage(graffiti: Graffiti, x: int, y: int)
+    + startEngine()
+    + stopEngine()
+    - chooseAction(curTarget: Graffiti): Action
+    - doAction(action: Action, time: int)
 }
 
 class Server {
-    -alphabot: Alphabot
-    -searchForGraffiti(): Graffiti
-    +receiveMessage(): void
-    +sendMessage(Graffiti: Graffiti): void
-}
-
-class Graffiti{
-    -exist: boolean
-    -posX: int
-    -posY: int
-    +Graffiti(x: int, y: int)
-    +getPosX(): int
-    +getPosY(): int
+    - alphabot: Alphabot
+    - camera: Camera
+    - frame: Mat
+    - hsv: Mat
+    - result: Mat
+    - lower_purple: Scalar
+    - upper_purple: Scalar
+    - lower_blue: Scalar
+    - upper_blue: Scalar
+    - convert_hsv(hsv: Scalar): Scalar
+    - searchForGraffiti(): Graffiti
+    - AlphabotAngleCalc(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int): double
+    - drawGraphics(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, angle: double, purpleContour: bool, blueContour: bool)
+    - searchForRobot(): tuple<int, int>
+    + receiveMessage()
+    + sendMessage(graffiti: Graffiti, x: int, y: int)
 }
 EngineController --* Alphabot
 Cleaner --* Alphabot
