@@ -111,12 +111,15 @@ public:
         exist = true;
     }
 
-    /// Возвращает X позицию граффити
+    /// Возвращает X позицию граффити, если существует, иначе -1
     /// @return Позиция X -- 0 Левая сторона
-    int getPosX() { return posX; }
-    /// Возвращает Y позицию граффити
+    int getPosX() { return exist ? posX : -1; }
+    /// Возвращает Y позицию граффити (если существует, иначе -1)
     /// @return Позиция Y -- 0 верхняя сторона
-    int getPosY() { return posY; }
+    int getPosY() { return exist ? posY : -1; }
+    /// Возвращает существование граффити
+    /// @return true если граффити существует
+    bool isExist() { return exist; }
 };
 
 // Класс робота
@@ -128,6 +131,7 @@ private:
     Cleaner cleaner;
     int posX;        // Текущая X координата
     int posY;        // Текущая Y координата
+    float angle = 0; // Текущий угол поворота
     Graffiti target; // Текущая позиция цели
 
     /// Выбирает действие на основании позиции граффити
@@ -167,14 +171,23 @@ public:
         posX = 0;
         posY = 0;
     }
+
     /// Получает сообщенеи с сервера
     /// @param target граффити к кторому нужно двигаться
-    void recieveMessage(Graffiti graffiti, int x, int y)
+    void recieveMessage(Graffiti graffiti, int x, int y, float agl)
     {
         target = graffiti;
         posX = x;
         posY = y;
+        angle = agl;
     }
+    void SetPosition(int x, int y)
+    {
+        posX = x;
+        posY = y;
+    }
+    int getPosX() { return posX; }
+    int getPosY() { return posY; }
     void startEngine()
     {
         engineStarted = true;
@@ -225,15 +238,28 @@ private:
 
     /// Ищет граффити
     /// @return Graffiti объект граффити
-    Graffiti searchForGraffiti();
-    
+    Graffiti searchForGraffiti()
+    {
+        // Временно возвращаем случайную позицию
+
+        // Случайная позиция. X от 0 до 640, Y от 0 до 480
+        int x = 150;
+        int y = 150;
+
+        // Создаем объект граффити
+        Graffiti graffiti(x, y);
+
+        // Возвращаем объект граффити
+        return graffiti;
+    }
+
     /// Вычисляет угол наклона робота
     /// @param puprle_X X координата фиолетовой точки
     /// @param purple_Y Y координата фиолетовой точки
     /// @param blue_X X координата синей точки
     /// @param blue_Y Y координата синей точки
     /// @return угол наклона в градусах
-    double AlphabotAngleCalc(int purple_X, int purple_Y, int blue_X, int blue_Y)
+    double AlphabotAngleCalc(int purple_X, int purple_Y, int blue_X, int blue_Y, int target_X, int target_Y)
     {
         // Проеряем условия
         if (purple_X == 0 || purple_Y == 0 || blue_Y == 0 || blue_X == 0)
@@ -243,19 +269,22 @@ private:
         if (purple_X == blue_X && blue_Y < purple_Y)
             return 180;
 
-        // Вычисляем угол наклона
-        double slope = static_cast<double>(purple_X - blue_X) / static_cast<double>(blue_Y - purple_Y);
+        double center_X = (purple_X + blue_X) / 2.0;
+        double center_Y = (purple_Y + blue_Y) / 2.0;
 
-        double angle_rad = atan(slope);
+        int dx1 = purple_X - blue_X;
+        int dy1 = purple_Y - blue_Y;
+        double dx2 = target_X - center_X;
+        double dy2 = target_Y - center_Y;
+
+        double det = dx1 * dy2 - dx2 * dy1;
+        double dot = dx1 * dx2 + dy1 * dy2;
+
+        double angle_rad = atan2(det, dot);
         double angle_deg = angle_rad * 180 / M_PI;
 
-        if (angle_deg < 0 && blue_Y < purple_Y)
-            angle_deg = 180 + angle_deg;
-        else if (blue_X > purple_X && blue_Y < purple_Y)
-            angle_deg = -180 + angle_deg;
-
         // Возвращаем угол в градусах с точностью до двух знаков
-        return round(angle_deg * 100) / 100;
+        return round(-angle_deg * 100) / 100;
     }
 
     /// Ристует графику поверх изображения
@@ -266,7 +295,7 @@ private:
     /// @param angle угол
     /// @param purpleContour фиолетовый маркер найден
     /// @param blueContour синий маркер найден
-    void drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, double angle, bool purpleContour, bool blueContour)
+    void drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, float angle, bool purpleContour, bool blueContour, Graffiti graffiti)
     {
         if (purpleContour)
         {
@@ -281,20 +310,28 @@ private:
 
         if (purpleContour && blueContour)
         {
-            // Рисуем вертикальную линию из цетра масс синего цвета
-            line(result, Point(blue_X, blue_Y), Point(blue_X, 0), Scalar(256, 256, 256), 1);
-
-            // Рисуем линию, соединяющую центры масс
-            line(result, Point(purple_X, purple_Y), Point(blue_X, blue_Y), Scalar(256, 256, 256), 1);
-
             // Пишем текст с углом поворота
-            putText(result, to_string(angle), Point(blue_X, blue_Y), FONT_HERSHEY_SIMPLEX, 1, Scalar(256, 256, 256), 2);
+            putText(result, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+        }
+
+        // Рисуем маленький белый круг по центру цели
+        if (graffiti.isExist())
+            circle(result, Point(graffiti.getPosX(), graffiti.getPosY()), 10, Scalar(255, 255, 255), -1);
+
+        if (purpleContour && blueContour)
+        {
+
+            // Рисуем линию, соединяющую центр робота и фиолетовый маркер
+            line(result, Point(alphabot.getPosX(), alphabot.getPosY()), Point(purple_X, purple_Y), Scalar(255, 255, 255), 1);
+
+            // Рисуем линию, соединяющую центр робота и центр граффити
+            line(result, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
         }
     }
 
     /// Ищет позицию робота
     /// @return Кортеж из двух чисел -- X и Y позиция робота
-    tuple<int, int> searchForRobot()
+    tuple<int, int, float> searchForRobot(Graffiti graffiti)
     {
         // Фильтруем кадр по цвету
         Mat maskPurple, maskBlue;
@@ -368,15 +405,16 @@ private:
         if (contoursPurple.size() > 0 && contoursBlue.size() > 0)
         {
             // Вычисляем угол между линиями и выводим его
-            angle = AlphabotAngleCalc(purple_X, purple_Y, blue_X, blue_Y);
+            angle = AlphabotAngleCalc(purple_X, purple_Y, blue_X, blue_Y, graffiti.getPosX(), graffiti.getPosY());
         }
 
         // Рисуем графику
-        drawGraphics(purple_X, purple_Y, blue_X, blue_Y, angle, contoursPurple.size() > 0, contoursBlue.size() > 0);
-        
-        return {static_cast<float>((purple_X + blue_X)/2), static_cast<float>((purple_Y + blue_Y)/2)};
+        drawGraphics(purple_X, purple_Y, blue_X, blue_Y, angle, contoursPurple.size() > 0, contoursBlue.size() > 0, graffiti);
+
+        return {static_cast<float>((purple_X + blue_X) / 2), static_cast<float>((purple_Y + blue_Y) / 2), angle};
     }
 
+    /// @brief Отображает исходный кадр и кадр с результатами фильтрации
     void showResults()
     {
         // Отображаем результаты
@@ -394,21 +432,24 @@ public:
         tie(hsv, frame) = camera.sendToServer();
 
         // Ищем граффити
-        // Graffiti graffiti = searchForGraffiti();
+        Graffiti graffiti = searchForGraffiti();
 
         // Вычисляем позицию робота
-        searchForRobot();
+        int x, y;
+        float angle;
+        tie(x, y, angle) = searchForRobot(graffiti);
 
         // Отображаем результаты
         showResults();
 
         // Отправляем сообщение роботу
-        // sendMessage(graffiti);
+        sendMessage(graffiti, x, y, angle);
     }
+
     // Отправляет сообщение роботу
-    void sendMessage(Graffiti graffiti, int x, int y)
+    void sendMessage(Graffiti graffiti, int x, int y, float angle = 0)
     {
-        alphabot.recieveMessage(graffiti, x, y);
+        alphabot.recieveMessage(graffiti, x, y, angle);
     }
 };
 
