@@ -110,7 +110,14 @@ public:
         posY = y;
         exist = true;
     }
-
+    
+    /// Устанавливает позицию граффити
+    /// @param x X позиция
+    /// @param y Y позиция
+    void setPosition(int x, int y){
+        posX = x;
+        posY = y;
+    }
     /// Возвращает X позицию граффити, если существует, иначе -1
     /// @return Позиция X -- 0 Левая сторона
     int getPosX() { return exist ? posX : -1; }
@@ -181,13 +188,23 @@ public:
         posY = y;
         angle = agl;
     }
+
+    /// @brief Устанавливает позицию робота
+    /// @param x X позиция
+    /// @param y Y позиция
     void SetPosition(int x, int y)
     {
         posX = x;
         posY = y;
     }
+
+    /// Получает X позицию робота
+    /// @return X позиция
     int getPosX() { return posX; }
+    /// Получает Y позицию робота
+    /// @return Y позиция
     int getPosY() { return posY; }
+
     void startEngine()
     {
         engineStarted = true;
@@ -295,7 +312,7 @@ private:
     /// @param angle угол
     /// @param purpleContour фиолетовый маркер найден
     /// @param blueContour синий маркер найден
-    void drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, float angle, bool purpleContour, bool blueContour, Graffiti graffiti)
+    void drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, double angle, bool purpleContour, bool blueContour, Graffiti graffiti)
     {
         if (purpleContour)
         {
