@@ -6,7 +6,7 @@
 using namespace cv;
 using namespace std;
 
-#define MIN_CONTOUR_AREA 250
+#define MIN_CONTOUR_AREA 200
 #define M_PI 3.1416
 
 // Действия которые может выполнять робот
@@ -60,9 +60,6 @@ private:
         Mat hsv;
         cvtColor(frame, hsv, COLOR_BGR2HSV);
 
-        // Отображаем исходный кадр
-        // imshow("Original", frame);
-
         // Возвращаем HSV и frame
         return make_tuple(hsv, frame);
     }
@@ -78,7 +75,8 @@ public:
 
         // Создаем окна для отображения исходного кадра и фильтрованного
         namedWindow("Original", WINDOW_NORMAL);
-        // namedWindow("Filtered", WINDOW_NORMAL);
+        namedWindow("Robot", WINDOW_NORMAL);
+        namedWindow("Graffiti", WINDOW_NORMAL);
     }
 
     ~Camera()
@@ -110,13 +108,20 @@ public:
         posY = y;
         exist = true;
     }
-    
+
     /// Устанавливает позицию граффити
     /// @param x X позиция
     /// @param y Y позиция
-    void setPosition(int x, int y){
+    void setState(int x, int y, bool exists)
+    {
+        if (x < 0 || y < 0)
+        {
+            exist = false;
+            return;
+        }
         posX = x;
         posY = y;
+        exist = exists;
     }
     /// Возвращает X позицию граффити, если существует, иначе -1
     /// @return Позиция X -- 0 Левая сторона
@@ -215,15 +220,78 @@ public:
     }
 };
 
+int hMin = 0, hMax = 179, sMin = 0, sMax = 255, vMin = 0, vMax = 255;
+class TresholdGenerator
+{
+private:
+    Mat mask;
+    Mat hsv;
+    Mat frame;
+
+public:
+    TresholdGenerator()
+    {
+        namedWindow("Mask", WINDOW_NORMAL);
+        namedWindow("Treshhold", WINDOW_NORMAL);
+    }
+
+    void trackBar()
+    {
+        // Создаем трекбары для настройки фильтра
+        createTrackbar("Hue Min", "Treshhold", &hMin, 179);
+        createTrackbar("Hue Max", "Treshhold", &hMax, 179);
+        createTrackbar("Sat Min", "Treshhold", &sMin, 255);
+        createTrackbar("Sat Max", "Treshhold", &sMax, 255);
+        createTrackbar("Val Min", "Treshhold", &vMin, 255);
+        createTrackbar("Val Max", "Treshhold", &vMax, 255);
+    }
+
+    void showMask()
+    {
+        // Задаем маску
+        inRange(hsv, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
+
+        // Отображаем результаты
+        imshow("Mask", hsv);
+        // imshow("Trackbars", Mat::zeros(Size(300, 200), CV_8UC1));
+    }
+
+    void printHSV()
+    {
+        cout << "Hue Min: " << hMin << endl;
+        cout << "Hue Max: " << hMax << endl;
+        cout << "Sat Min: " << sMin << endl;
+        cout << "Sat Max: " << sMax << endl;
+        cout << "Val Min: " << vMin << endl;
+        cout << "Val Max: " << vMax << endl;
+    }
+
+    void recieveImage(const Mat &hsv, const Mat &frame)
+    {
+        this->hsv = hsv;
+        this->frame = frame;
+
+        // Задаем маску
+        inRange(hsv, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
+        cout << "hMin: " << hMin << endl;
+
+        // Отображаем результаты
+        imshow("Mask", mask);
+    }
+};
+
 // Класс сервера для коммуникации между камерой и роботом а также вычислений
 class Server
 {
 private:
     Alphabot alphabot;
+    Graffiti graffiti;
     Camera camera;
+    TresholdGenerator tresholdGenerator;
     Mat frame;
     Mat hsv;
-    Mat result;
+    Mat robotRes;
+    Mat graffitiRes;
 
     // Уставнавливаем нижнюю и верхнюю границу цветов маркера
     Scalar lower_purple = convert_hsv(Scalar(300, 30, 30));
@@ -231,6 +299,9 @@ private:
 
     Scalar lower_blue = convert_hsv(Scalar(180, 50, 30));
     Scalar upper_blue = convert_hsv(Scalar(220, 100, 100));
+
+    Scalar lower_green = convert_hsv(Scalar(150, 30, 30));
+    Scalar upper_green = convert_hsv(Scalar(180, 80, 80));
 
     /// Переводит HSV в формат [0, 180] [0, 255] [0, 255]
     /// @param hsv HSV в формате [0, 360] [0, 100] [0, 100]
@@ -253,21 +324,48 @@ private:
         return Scalar(h, s, v);
     }
 
-    /// Ищет граффити
-    /// @return Graffiti объект граффити
-    Graffiti searchForGraffiti()
+    tuple<int, int> searchForGraffiti()
     {
-        // Временно возвращаем случайную позицию
+        Mat maskGreen;
+        inRange(hsv, lower_green, upper_green, maskGreen);
 
-        // Случайная позиция. X от 0 до 640, Y от 0 до 480
-        int x = 150;
-        int y = 150;
+        // Накладываем маску на изображение
+        graffitiRes = Mat::zeros(frame.size(), CV_8UC3);
+        frame.copyTo(graffitiRes, maskGreen);
 
-        // Создаем объект граффити
-        Graffiti graffiti(x, y);
+        int x = 0;
+        int y = 0;
 
-        // Возвращаем объект граффити
-        return graffiti;
+        // Поиск контуров на изображении
+        vector<vector<Point>> contours;
+        findContours(maskGreen, contours, RETR_TREE, CHAIN_APPROX_SIMPLE);
+
+        // Если найден хотя бы один контур
+        if (contours.size() > 0)
+        {
+            // Находим контур с максимальной площадью
+            auto max_contour = max_element(contours.begin(), contours.end(),
+                                           [](const auto &a, const auto &b)
+                                           {
+                                               return contourArea(a) < contourArea(b);
+                                           });
+
+            // Если площадь контура больше заданного значения
+            if (contourArea(*max_contour) > MIN_CONTOUR_AREA)
+            {
+                // Находим центр контура
+                Moments m = moments(*max_contour);
+                x = static_cast<int>(m.m10 / m.m00);
+                y = static_cast<int>(m.m01 / m.m00);
+
+                // Рисуем белую точку в центре контура
+                circle(graffitiRes, Point(x, y), 1, Scalar(255, 255, 255), 2);
+
+                // Возвращаем координаты контура
+                return make_tuple(x, y);
+            }
+        }
+        return make_tuple(-1, -1);
     }
 
     /// Вычисляет угол наклона робота
@@ -317,32 +415,32 @@ private:
         if (purpleContour)
         {
             // Рисуем маленький красный круг в центре масс контура фиолетового маркера
-            circle(result, Point(purple_X, purple_Y), 10, Scalar(0, 0, 255), -1);
+            circle(robotRes, Point(purple_X, purple_Y), 10, Scalar(0, 0, 255), -1);
         }
         if (blueContour)
         {
             // Рисуем маленький синий круг в центре масс контура синего маркера
-            circle(result, Point(blue_X, blue_Y), 10, Scalar(255, 0, 0), -1);
+            circle(robotRes, Point(blue_X, blue_Y), 10, Scalar(255, 0, 0), -1);
         }
 
         if (purpleContour && blueContour)
         {
             // Пишем текст с углом поворота
-            putText(result, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+            putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
         }
 
         // Рисуем маленький белый круг по центру цели
         if (graffiti.isExist())
-            circle(result, Point(graffiti.getPosX(), graffiti.getPosY()), 10, Scalar(255, 255, 255), -1);
+            circle(robotRes, Point(graffiti.getPosX(), graffiti.getPosY()), 10, Scalar(255, 255, 255), -1);
 
         if (purpleContour && blueContour)
         {
 
             // Рисуем линию, соединяющую центр робота и фиолетовый маркер
-            line(result, Point(alphabot.getPosX(), alphabot.getPosY()), Point(purple_X, purple_Y), Scalar(255, 255, 255), 1);
+            line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(purple_X, purple_Y), Scalar(255, 255, 255), 1);
 
             // Рисуем линию, соединяющую центр робота и центр граффити
-            line(result, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
+            line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
         }
     }
 
@@ -358,8 +456,8 @@ private:
         Mat mask = maskBlue | maskPurple;
 
         // Накладываем маску на исходный кадр и записываем результат в result
-        result = Mat::zeros(frame.size(), CV_8UC3);
-        frame.copyTo(result, mask);
+        robotRes = Mat::zeros(frame.size(), CV_8UC3);
+        frame.copyTo(robotRes, mask);
 
         int purple_X = 0;
         int purple_Y = 0;
@@ -436,7 +534,8 @@ private:
     {
         // Отображаем результаты
         imshow("Original", frame);
-        imshow("Filtered", result);
+        imshow("Robot", robotRes);
+        imshow("Graffiti", graffitiRes);
     }
 
 public:
@@ -449,7 +548,11 @@ public:
         tie(hsv, frame) = camera.sendToServer();
 
         // Ищем граффити
-        Graffiti graffiti = searchForGraffiti();
+        int xGraffiti, yGraffiti;
+        tie(xGraffiti, yGraffiti) = searchForGraffiti();
+
+        // Создаем объект граффити
+        graffiti.setState(xGraffiti, yGraffiti, true);
 
         // Вычисляем позицию робота
         int x, y;
@@ -468,20 +571,41 @@ public:
     {
         alphabot.recieveMessage(graffiti, x, y, angle);
     }
+
+    TresholdGenerator getTresholdGenerator()
+    {
+        return tresholdGenerator;
+    }
+    void sendImageToTresholdGenerator()
+    {
+        tresholdGenerator.recieveImage(hsv, frame);
+    }
 };
 
 int main()
 {
     Server server;
+    TresholdGenerator tresholdGenerator = server.getTresholdGenerator();
+    tresholdGenerator.trackBar();
+
     while (true)
     {
         // Получаем сообщение от камеры
         server.receiveMessage();
 
+        if (true)
+        {
+            server.sendImageToTresholdGenerator();
+            // tresholdGenerator.showMask();
+        }
+
         // Ожидаем нажатия клавиши
         // При нажатии на esc выходим
         if (waitKey(1) == 27)
+        {
+            // tresholdGenerator.printHSV();
             break;
+        }
     }
     return 0;
 }
