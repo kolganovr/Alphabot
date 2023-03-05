@@ -221,7 +221,7 @@ public:
 };
 
 int hMin = 0, hMax = 179, sMin = 0, sMax = 255, vMin = 0, vMax = 255;
-class TresholdGenerator
+class ThresholdGenerator
 {
 private:
     Mat mask;
@@ -229,21 +229,22 @@ private:
     Mat frame;
 
 public:
-    TresholdGenerator()
+    ThresholdGenerator()
     {
-        namedWindow("Mask", WINDOW_NORMAL);
-        namedWindow("Treshhold", WINDOW_NORMAL);
+        // namedWindow("Mask", WINDOW_NORMAL);
+        // namedWindow("Threshold", WINDOW_NORMAL);
     }
 
     void trackBar()
     {
+        namedWindow("Threshold", WINDOW_NORMAL);
         // Создаем трекбары для настройки фильтра
-        createTrackbar("Hue Min", "Treshhold", &hMin, 179);
-        createTrackbar("Hue Max", "Treshhold", &hMax, 179);
-        createTrackbar("Sat Min", "Treshhold", &sMin, 255);
-        createTrackbar("Sat Max", "Treshhold", &sMax, 255);
-        createTrackbar("Val Min", "Treshhold", &vMin, 255);
-        createTrackbar("Val Max", "Treshhold", &vMax, 255);
+        createTrackbar("Hue Min", "Threshold", &hMin, 179);
+        createTrackbar("Hue Max", "Threshold", &hMax, 179);
+        createTrackbar("Sat Min", "Threshold", &sMin, 255);
+        createTrackbar("Sat Max", "Threshold", &sMax, 255);
+        createTrackbar("Val Min", "Threshold", &vMin, 255);
+        createTrackbar("Val Max", "Threshold", &vMax, 255);
     }
 
     void printHSV()
@@ -276,7 +277,7 @@ private:
     Alphabot alphabot;
     Graffiti graffiti;
     Camera camera;
-    TresholdGenerator tresholdGenerator;
+    ThresholdGenerator thresholdGenerator;
     Mat frame;
     Mat hsv;
     Mat robotRes;
@@ -291,29 +292,8 @@ private:
     Scalar lower_blue = Scalar(91, 179, 125);
     Scalar upper_blue = Scalar(108, 255, 255);
 
-    Scalar lower_green = convert_hsv(Scalar(150, 30, 30));
-    Scalar upper_green = convert_hsv(Scalar(180, 80, 80));
-
-    /// Переводит HSV в формат [0, 180] [0, 255] [0, 255]
-    /// @param hsv HSV в формате [0, 360] [0, 100] [0, 100]
-    /// @return HSV в формате [0, 180] [0, 255] [0, 255]
-    Scalar convert_hsv(Scalar hsv)
-    {
-        // Получаем H S V парметры
-        int h = hsv[0];
-        int s = hsv[1];
-        int v = hsv[2];
-
-        // Переводим H из формата [0, 360] в [2, 180]
-        h = static_cast<int>(h * 180 / 360);
-
-        // Переводим S и V из формата [0, 100] в [0, 255]
-        s = static_cast<int>(s * 255 / 100);
-        v = static_cast<int>(v * 255 / 100);
-
-        // Возвращаем HSV
-        return Scalar(h, s, v);
-    }
+    Scalar lower_green = Scalar(50, 116, 40);
+    Scalar upper_green = Scalar(93, 222, 147);
 
     tuple<int, int> searchForGraffiti()
     {
@@ -570,19 +550,55 @@ public:
         alphabot.recieveMessage(graffiti, x, y, angle);
     }
 
-    TresholdGenerator getTresholdGenerator()
+    ThresholdGenerator getThresholdGenerator()
     {
-        return tresholdGenerator;
+        return thresholdGenerator;
     }
 
-    void sendImageToTresholdGenerator()
+    void sendImageToThresholdGenerator()
     {
-        tresholdGenerator.recieveImage(hsv, frame);
+        thresholdGenerator.recieveImage(hsv, frame);
     }
 
     void setDebugMode(bool isDebug)
     {
         debugMode = isDebug;
+        
+        // Если включен режим отладки, должны быть только окна Threshold и Mask
+        if (debugMode)
+        {
+            thresholdGenerator.trackBar();
+            namedWindow("Mask", WINDOW_NORMAL);
+
+            destroyWindow("Original");
+            destroyWindow("Robot");
+            destroyWindow("Graffiti");
+        }
+        else
+        {
+            namedWindow("Original", WINDOW_NORMAL);
+            namedWindow("Robot", WINDOW_NORMAL);
+            namedWindow("Graffiti", WINDOW_NORMAL);
+
+            destroyWindow("Threshold");
+            destroyWindow("Mask");
+        }
+    }
+
+    void setHSV(string color){
+        cout << color << " " << hMin << " " << sMin << " " << vMin << " " << hMax << " " << sMax << " " << vMax << endl;
+        if (color == "purple"){
+            lower_purple = Scalar(hMin, sMin, vMin);
+            upper_purple = Scalar(hMax, sMax, vMax);
+        }
+        if (color == "blue"){
+            lower_blue = Scalar(hMin, sMin, vMin);
+            upper_blue = Scalar(hMax, sMax, vMax);
+        }
+        if (color == "green"){
+            lower_green = Scalar(hMin, sMin, vMin);
+            upper_green = Scalar(hMax, sMax, vMax);
+        }
     }
 };
 
@@ -590,9 +606,6 @@ int main()
 {
     bool isDebug = false;
     Server server(isDebug);
-
-    TresholdGenerator tresholdGenerator = server.getTresholdGenerator();
-    tresholdGenerator.trackBar();
 
     while (true)
     {
@@ -612,7 +625,21 @@ int main()
 
         if (isDebug)
         {
-            server.sendImageToTresholdGenerator();
+            server.sendImageToThresholdGenerator();
+
+            // Если нажата клавиша, то сохраняем настройки пороговых значений для заданного цвета
+            if (key == 49) // 1
+            {
+                server.setHSV("purple");
+            }
+            else if (key == 50) // 2
+            {
+                server.setHSV("green");
+            }
+            else if (key == 51) // 3
+            {
+                server.setHSV("blue");
+            }
         }
 
         // Если нажата ESC, то выходим из программы
