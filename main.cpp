@@ -246,16 +246,6 @@ public:
         createTrackbar("Val Max", "Treshhold", &vMax, 255);
     }
 
-    void showMask()
-    {
-        // Задаем маску
-        inRange(hsv, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
-
-        // Отображаем результаты
-        imshow("Mask", hsv);
-        // imshow("Trackbars", Mat::zeros(Size(300, 200), CV_8UC1));
-    }
-
     void printHSV()
     {
         cout << "Hue Min: " << hMin << endl;
@@ -273,7 +263,6 @@ public:
 
         // Задаем маску
         inRange(hsv, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
-        cout << "hMin: " << hMin << endl;
 
         // Отображаем результаты
         imshow("Mask", mask);
@@ -293,12 +282,14 @@ private:
     Mat robotRes;
     Mat graffitiRes;
 
-    // Уставнавливаем нижнюю и верхнюю границу цветов маркера
-    Scalar lower_purple = convert_hsv(Scalar(300, 30, 30));
-    Scalar upper_purple = convert_hsv(Scalar(350, 100, 100));
+    bool debugMode = false;
 
-    Scalar lower_blue = convert_hsv(Scalar(180, 50, 30));
-    Scalar upper_blue = convert_hsv(Scalar(220, 100, 100));
+    // Уставнавливаем нижнюю и верхнюю границу цветов маркера
+    Scalar lower_purple = Scalar(169, 108, 102);
+    Scalar upper_purple = Scalar(179, 153, 255);
+
+    Scalar lower_blue = Scalar(91, 179, 125);
+    Scalar upper_blue = Scalar(108, 255, 255);
 
     Scalar lower_green = convert_hsv(Scalar(150, 30, 30));
     Scalar upper_green = convert_hsv(Scalar(180, 80, 80));
@@ -540,12 +531,19 @@ private:
 
 public:
     Server() {}
+    Server(bool isDebug)
+    {
+        debugMode = isDebug;
+    }
 
     // Получает сообщение от камеры, отправляет роботу и отображает результаты
     void receiveMessage()
     {
         // Получаем изображение с камеры
         tie(hsv, frame) = camera.sendToServer();
+
+        if(debugMode) 
+            return;
 
         // Ищем граффити
         int xGraffiti, yGraffiti;
@@ -576,34 +574,50 @@ public:
     {
         return tresholdGenerator;
     }
+
     void sendImageToTresholdGenerator()
     {
         tresholdGenerator.recieveImage(hsv, frame);
+    }
+
+    void setDebugMode(bool isDebug)
+    {
+        debugMode = isDebug;
     }
 };
 
 int main()
 {
-    Server server;
+    bool isDebug = false;
+    Server server(isDebug);
+
     TresholdGenerator tresholdGenerator = server.getTresholdGenerator();
     tresholdGenerator.trackBar();
 
     while (true)
     {
+        // Получаем нажатую клавишу
+        char key = waitKey(1);
+
+        // Если нажат пробел, то переключаем режим отладки
+        if (key == 32)
+        {
+            isDebug = !isDebug;
+            server.setDebugMode(isDebug);
+            cout << "Debug mode: " << isDebug << endl;
+        }
+
         // Получаем сообщение от камеры
         server.receiveMessage();
 
-        if (true)
+        if (isDebug)
         {
             server.sendImageToTresholdGenerator();
-            // tresholdGenerator.showMask();
         }
 
-        // Ожидаем нажатия клавиши
-        // При нажатии на esc выходим
-        if (waitKey(1) == 27)
+        // Если нажата ESC, то выходим из программы
+        if (key == 27)
         {
-            // tresholdGenerator.printHSV();
             break;
         }
     }
