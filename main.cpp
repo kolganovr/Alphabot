@@ -1,7 +1,9 @@
 #include <iostream>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 #include <math.h>
 #include <tuple>
+#include <vector>
 
 using namespace cv;
 using namespace std;
@@ -247,14 +249,29 @@ public:
         createTrackbar("Val Max", "Threshold", &vMax, 255);
     }
 
-    void printHSV()
+    void saveHSVtoFile(vector<Scalar> hsvValues)
     {
-        cout << "Hue Min: " << hMin << endl;
-        cout << "Hue Max: " << hMax << endl;
-        cout << "Sat Min: " << sMin << endl;
-        cout << "Sat Max: " << sMax << endl;
-        cout << "Val Min: " << vMin << endl;
-        cout << "Val Max: " << vMax << endl;
+        ofstream file;
+        // Если файла нет то создаем его в директории /docs
+        file.open("D:/Coding/CPP/Alphabot/docs/hsvValues.txt");
+
+        // Записываем в файл значения нижней и верхней границы цветов
+        for (int i = 0; i < hsvValues.size(); i++)
+        {
+            file << hsvValues[i][0] << " " << hsvValues[i][1] << " " << hsvValues[i][2] << endl;
+        }
+        cout << "HSV values saved to file" << endl;
+        file.close();
+    }
+
+    tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> getHSVfromFile()
+    {
+        ifstream file;
+        file.open("D:/Coding/CPP/Alphabot/docs/hsvValues.txt");
+        int hMin, hMax, sMin, sMax, vMin, vMax;
+        file >> hMin >> hMax >> sMin >> sMax >> vMin >> vMax;
+        file.close();
+        return make_tuple(hMin, hMax, sMin, sMax, vMin, vMax);
     }
 
     void recieveImage(const Mat &hsv, const Mat &frame)
@@ -267,6 +284,10 @@ public:
 
         // Отображаем результаты
         imshow("Mask", mask);
+    }
+
+    tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> sendHSVtoServer(){
+        return getHSVfromFile();
     }
 };
 
@@ -295,6 +316,8 @@ private:
     Scalar lower_green = Scalar(50, 116, 40);
     Scalar upper_green = Scalar(93, 222, 147);
 
+    /// Поиск граффити на изображении
+    /// @return координаты граффити
     tuple<int, int> searchForGraffiti()
     {
         Mat maskGreen;
@@ -522,7 +545,7 @@ public:
         // Получаем изображение с камеры
         tie(hsv, frame) = camera.sendToServer();
 
-        if(debugMode) 
+        if (debugMode)
             return;
 
         // Ищем граффити
@@ -550,20 +573,25 @@ public:
         alphabot.recieveMessage(graffiti, x, y, angle);
     }
 
-    ThresholdGenerator getThresholdGenerator()
-    {
-        return thresholdGenerator;
-    }
-
     void sendImageToThresholdGenerator()
     {
         thresholdGenerator.recieveImage(hsv, frame);
     }
 
+    void sendHSVToThresholdGenerator()
+    {
+        thresholdGenerator.saveHSVtoFile(vector<Scalar>{lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue});
+    }
+
+    void recieveHSVFromThresholdGenerator()
+    {
+        tie(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue) = thresholdGenerator.sendHSVtoServer();
+    }
+
     void setDebugMode(bool isDebug)
     {
         debugMode = isDebug;
-        
+
         // Если включен режим отладки, должны быть только окна Threshold и Mask
         if (debugMode)
         {
@@ -585,17 +613,21 @@ public:
         }
     }
 
-    void setHSV(string color){
+    void setHSV(string color)
+    {
         cout << color << " " << hMin << " " << sMin << " " << vMin << " " << hMax << " " << sMax << " " << vMax << endl;
-        if (color == "purple"){
+        if (color == "purple")
+        {
             lower_purple = Scalar(hMin, sMin, vMin);
             upper_purple = Scalar(hMax, sMax, vMax);
         }
-        if (color == "blue"){
+        if (color == "blue")
+        {
             lower_blue = Scalar(hMin, sMin, vMin);
             upper_blue = Scalar(hMax, sMax, vMax);
         }
-        if (color == "green"){
+        if (color == "green")
+        {
             lower_green = Scalar(hMin, sMin, vMin);
             upper_green = Scalar(hMax, sMax, vMax);
         }
@@ -639,6 +671,10 @@ int main()
             else if (key == 51) // 3
             {
                 server.setHSV("blue");
+            }
+            else if (key == 115) // s
+            {
+                server.sendHSVToThresholdGenerator();
             }
         }
 
