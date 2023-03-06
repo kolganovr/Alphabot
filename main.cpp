@@ -231,12 +231,9 @@ private:
     Mat frame;
 
 public:
-    ThresholdGenerator()
-    {
-        // namedWindow("Mask", WINDOW_NORMAL);
-        // namedWindow("Threshold", WINDOW_NORMAL);
-    }
+    ThresholdGenerator(){};
 
+    /// Функция для создания трекбаров для настройки фильтра HSV
     void trackBar()
     {
         namedWindow("Threshold", WINDOW_NORMAL);
@@ -249,10 +246,18 @@ public:
         createTrackbar("Val Max", "Threshold", &vMax, 255);
     }
 
+    /// Функция для сохранений значений маски в файл
+    /// @param hsvValues вектор значений маски для каждого цвета (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
     void saveHSVtoFile(vector<Scalar> hsvValues)
     {
         ofstream file;
-        file.open("D:/Coding/CPP/Alphabot/docs/hsvValues.txt");
+        file.open("../../docs/hsvValues.txt");
+
+        if (!file.is_open())
+        {
+            cout << "Error opening file" << endl;
+            return;
+        }
 
         // Записываем в файл значения нижней и верхней границы цветов
         for (int i = 0; i < hsvValues.size(); i++)
@@ -263,10 +268,17 @@ public:
         file.close();
     }
 
+    /// Функция для получения значений маски из файла
+    /// @return вектор значений маски для каждого цвета (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
     tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> getHSVfromFile()
     {
         ifstream file;
-        file.open("D:/Coding/CPP/Alphabot/docs/hsvValues.txt");
+        file.open("../../docs/hsvValues.txt");
+        if (!file.is_open())
+        {
+            cout << "ERROR OPPENING FILE!" << endl;
+        }
+            
         Scalar lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue;
         file >> lower_purple[0] >> lower_purple[1] >> lower_purple[2];
         file >> upper_purple[0] >> upper_purple[1] >> upper_purple[2];
@@ -278,12 +290,13 @@ public:
         cout << "HSV values loaded from file" << endl;
 
         cout << "lower_purple: " << lower_purple << " " << "upper_purple: " << upper_purple << endl;
-        cout << "lower_green: " << lower_green << " " << "upper_green: " << upper_green << endl;
-        cout << "lower_blue: " << lower_blue << " " << "upper_blue: " << upper_blue << endl;
+        cout << "lower_green:  " << lower_green << " " << "upper_green:  " << upper_green << endl;
+        cout << "lower_blue:   " << lower_blue << " " << "upper_blue:   " << upper_blue << endl;
 
         return make_tuple(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue);
     }
 
+    /// Функция для получения изображения с камеры
     void recieveImage(const Mat &hsv, const Mat &frame)
     {
         this->hsv = hsv;
@@ -296,6 +309,8 @@ public:
         imshow("Mask", mask);
     }
 
+    /// Функция для отправки маски на сервер
+    /// @return параметры маски (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
     tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> sendHSVtoServer(){
         return getHSVfromFile();
     }
@@ -583,21 +598,26 @@ public:
         alphabot.recieveMessage(graffiti, x, y, angle);
     }
 
+    // Отправляет изображение с камеры в генератор маски
     void sendImageToThresholdGenerator()
     {
         thresholdGenerator.recieveImage(hsv, frame);
     }
 
+    // Отправляет границы цветов в генератор маски для сохранения в файл
     void sendHSVToThresholdGenerator()
     {
         thresholdGenerator.saveHSVtoFile(vector<Scalar>{lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue});
     }
 
+    // Получает границы цветов из генератора маски
     void recieveHSVFromThresholdGenerator()
     {
         tie(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue) = thresholdGenerator.sendHSVtoServer();
     }
 
+    /// Устанавливает режим отладки
+    /// @param isDebug - true, если включен режим отладки
     void setDebugMode(bool isDebug)
     {
         debugMode = isDebug;
@@ -623,6 +643,8 @@ public:
         }
     }
 
+    /// Устанавливает границы цветов
+    /// @param color - цвет, границы которого нужно установить (purple, blue, green)
     void setHSV(string color)
     {
         cout << color << " " << hMin << " " << sMin << " " << vMin << " " << hMax << " " << sMax << " " << vMax << endl;
