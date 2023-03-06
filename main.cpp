@@ -252,7 +252,6 @@ public:
     void saveHSVtoFile(vector<Scalar> hsvValues)
     {
         ofstream file;
-        // Если файла нет то создаем его в директории /docs
         file.open("D:/Coding/CPP/Alphabot/docs/hsvValues.txt");
 
         // Записываем в файл значения нижней и верхней границы цветов
@@ -268,10 +267,21 @@ public:
     {
         ifstream file;
         file.open("D:/Coding/CPP/Alphabot/docs/hsvValues.txt");
-        int hMin, hMax, sMin, sMax, vMin, vMax;
-        file >> hMin >> hMax >> sMin >> sMax >> vMin >> vMax;
+        Scalar lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue;
+        file >> lower_purple[0] >> lower_purple[1] >> lower_purple[2];
+        file >> upper_purple[0] >> upper_purple[1] >> upper_purple[2];
+        file >> lower_green[0] >> lower_green[1] >> lower_green[2];
+        file >> upper_green[0] >> upper_green[1] >> upper_green[2];
+        file >> lower_blue[0] >> lower_blue[1] >> lower_blue[2];
+        file >> upper_blue[0] >> upper_blue[1] >> upper_blue[2];
         file.close();
-        return make_tuple(hMin, hMax, sMin, sMax, vMin, vMax);
+        cout << "HSV values loaded from file" << endl;
+
+        cout << "lower_purple: " << lower_purple << " " << "upper_purple: " << upper_purple << endl;
+        cout << "lower_green: " << lower_green << " " << "upper_green: " << upper_green << endl;
+        cout << "lower_blue: " << lower_blue << " " << "upper_blue: " << upper_blue << endl;
+
+        return make_tuple(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue);
     }
 
     void recieveImage(const Mat &hsv, const Mat &frame)
@@ -675,6 +685,10 @@ int main()
             else if (key == 115) // s
             {
                 server.sendHSVToThresholdGenerator();
+            }
+            else if (key == 108) // l
+            {
+                server.recieveHSVFromThresholdGenerator();
             }
         }
 
