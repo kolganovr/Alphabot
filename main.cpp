@@ -332,14 +332,14 @@ private:
     bool debugMode = false;
 
     // Уставнавливаем нижнюю и верхнюю границу цветов маркера
-    Scalar lower_purple = Scalar(169, 108, 102);
-    Scalar upper_purple = Scalar(179, 153, 255);
-
-    Scalar lower_blue = Scalar(91, 179, 125);
-    Scalar upper_blue = Scalar(108, 255, 255);
+    Scalar lower_purple = Scalar(150, 146, 246);
+    Scalar upper_purple = Scalar(179, 219, 255);
 
     Scalar lower_green = Scalar(50, 116, 40);
     Scalar upper_green = Scalar(93, 222, 147);
+
+    Scalar lower_blue = Scalar(91, 179, 125);
+    Scalar upper_blue = Scalar(108, 255, 255);
 
     /// Поиск граффити на изображении
     /// @return координаты граффити
