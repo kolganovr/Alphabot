@@ -1,9 +1,10 @@
 @startuml Alphabot
+
 enum Action {
-    FORWARD
-    BACKWARD
-    LEFT
-    RIGHT
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT,
     CLEAN
 }
 
@@ -21,6 +22,8 @@ class Cleaner {
 class Camera {
     - cap: VideoCapture
     - getImage(): tuple<Mat, Mat>
+    + Camera()
+    + ~Camera()
     + sendToServer(): tuple<Mat, Mat>
 }
 
@@ -28,10 +31,12 @@ class Graffiti {
     - exist: bool
     - posX: int
     - posY: int
-    + getPosX(): int
-    + getPosY(): int
     + Graffiti()
     + Graffiti(int x, int y)
+    + setState(int x, int y, bool exists)
+    + getPosX(): int
+    + getPosY(): int
+    + isExist(): bool
 }
 
 class Alphabot {
@@ -40,37 +45,70 @@ class Alphabot {
     - cleaner: Cleaner
     - posX: int
     - posY: int
+    - angle: float
     - target: Graffiti
-    + recieveMessage(graffiti: Graffiti, x: int, y: int)
+    - chooseAction(Graffiti curTarget): Action
+    - doAction(Action action, int time)
+    + Alphabot()
+    + recieveMessage(Graffiti graffiti, int x, int y, float agl)
+    + SetPosition(int x, int y)
+    + getPosX(): int
+    + getPosY(): int
     + startEngine()
     + stopEngine()
-    - chooseAction(curTarget: Graffiti): Action
-    - doAction(action: Action, time: int)
+}
+
+class ThresholdGenerator {
+    - mask: Mat
+    - hsv: Mat
+    - frame: Mat
+    + ThresholdGenerator()
+    + trackBar()
+    + saveHSVtoFile(vector<Scalar> hsvValues)
+    + getHSVfromFile(): tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>
+    + recieveImage(const Mat &hsv, const Mat &frame)
+    + sendHSVtoServer(): tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>
 }
 
 class Server {
-    - alphabot: Alphabot
-    - camera: Camera
-    - frame: Mat
-    - hsv: Mat
-    - result: Mat
-    - lower_purple: Scalar
-    - upper_purple: Scalar
-    - lower_blue: Scalar
-    - upper_blue: Scalar
-    - convert_hsv(hsv: Scalar): Scalar
-    - searchForGraffiti(): Graffiti
-    - AlphabotAngleCalc(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int): double
-    - drawGraphics(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, angle: double, purpleContour: bool, blueContour: bool)
-    - searchForRobot(): tuple<int, int>
-    + receiveMessage()
-    + sendMessage(graffiti: Graffiti, x: int, y: int)
+- alphabot: Alphabot
+- graffiti: Graffiti
+- camera: Camera
+- thresholdGenerator: ThresholdGenerator
+- frame: Mat
+- hsv: Mat
+- robotRes: Mat
+- graffitiRes: Mat
+- debugMode: bool
+- lower_purple: Scalar
+- upper_purple: Scalar
+- lower_blue: Scalar
+- upper_blue: Scalar
+- lower_green: Scalar
+- upper_green: Scalar
+- searchForGraffiti(): tuple<int, int>
+- AlphabotAngleCalc(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, target_X: int, target_Y: int): double
+- drawGraphics(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, angle: double, purpleContour: bool, blueContour: bool, graffiti: Graffiti)
+- searchForRobot(graffiti: Graffiti): tuple<int, int, float>
+- showResults()
++ Server()
++ Server(isDebug: bool)
++ receiveMessage()
++ sendMessage(graffiti: Graffiti, x: int, y: int, angle: float = 0)
++ sendImageToThresholdGenerator()
++ sendHSVToThresholdGenerator()
++ recieveHSVFromThresholdGenerator()
++ setDebugMode(isDebug: bool)
++ setHSV(color: string)
+
 }
+
 EngineController --* Alphabot
 Cleaner --* Alphabot
 Graffiti --* Alphabot
 Action --> Alphabot
-Graffiti --> Server
+Graffiti --* Server
+ThresholdGenerator --* Server
 Camera -* Server
 Server *- Alphabot
 @enduml
