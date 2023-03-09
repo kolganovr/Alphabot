@@ -69,4 +69,4 @@
 ![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/docs/KTC.png)
 
 ## UML
-![UML](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/main/plantUML.wsd)
+![UML](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/main/plantUML.wsd#1)
