@@ -107,6 +107,7 @@ EngineController --* Alphabot
 Cleaner --* Alphabot
 Graffiti --* Alphabot
 Action --> Alphabot
+Action --> Server
 Graffiti --* Server
 ThresholdGenerator --* Server
 Camera -* Server
