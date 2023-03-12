@@ -10,15 +10,17 @@ using namespace std;
 
 #define MIN_CONTOUR_AREA 200
 #define M_PI 3.1416
+#define dAngle 20
+#define dDist 10
 
 // Действия которые может выполнять робот
 enum Action
 {
     FORWARD,
-    BACKWARD,
     LEFT,
     RIGHT,
-    CLEAN
+    CLEAN,
+    IDLE
 };
 
 // Класс для управления двигателями
@@ -26,13 +28,20 @@ class EngineController
 {
 public:
     // Выполняет движение вперед заданное время
-    void moveForward(int time);
-    // Выполняет движение назад заданное время
-    void moveBackwards(int time);
+    void moveForward(int time)
+    {
+        cout << "moveForward" << endl;
+    }
     // Выполняет поворот налево заданное время
-    void moveLeft(int time);
+    void moveLeft(int time)
+    {
+        cout << "moveLeft" << endl;
+    }
     // Выполняет поворот направо заданное время
-    void moveRight(int time);
+    void moveRight(int time)
+    {
+        cout << "moveRight" << endl;
+    }
 };
 
 // Класс для управления моющими щетками
@@ -40,7 +49,10 @@ class Cleaner
 {
 public:
     // Выполняет очистку поверхности
-    void perform();
+    void perform()
+    {
+        cout << "Clean" << endl;
+    }
 };
 
 // Класс для управления камерой
@@ -140,29 +152,21 @@ public:
 class Alphabot
 {
 private:
-    bool engineStarted;
     EngineController engineController;
     Cleaner cleaner;
-    int posX;        // Текущая X координата
-    int posY;        // Текущая Y координата
-    float angle = 0; // Текущий угол поворота
-    Graffiti target; // Текущая позиция цели
 
-    /// Выбирает действие на основании позиции граффити
-    /// @param curTarget объект к которому движемся
-    /// @return выбранное действие
-    Action chooseAction(Graffiti curTarget);
+    bool engineStarted; // Состояние двигателей
+    int posX;           // Текущая X координата
+    int posY;           // Текущая Y координата
+    Action state;       // Текущее состояние робота
 
     // Движение робота или очистка
-    void doAction(Action action, int time)
+    void doAction(int time)
     {
-        switch (action)
+        switch (state)
         {
         case FORWARD:
             engineController.moveForward(time);
-            break;
-        case BACKWARD:
-            engineController.moveBackwards(time);
             break;
         case LEFT:
             engineController.moveLeft(time);
@@ -173,6 +177,8 @@ private:
         case CLEAN:
             cleaner.perform();
             break;
+        case IDLE:
+            break;
         default:
             break;
         }
@@ -182,18 +188,9 @@ public:
     Alphabot()
     {
         engineStarted = false;
+        state = IDLE;
         posX = 0;
         posY = 0;
-    }
-
-    /// Получает сообщенеи с сервера
-    /// @param target граффити к кторому нужно двигаться
-    void recieveMessage(Graffiti graffiti, int x, int y, float agl)
-    {
-        target = graffiti;
-        posX = x;
-        posY = y;
-        angle = agl;
     }
 
     /// @brief Устанавливает позицию робота
@@ -212,13 +209,43 @@ public:
     /// @return Y позиция
     int getPosY() { return posY; }
 
+    // Запускает двигатель
     void startEngine()
     {
+        cout << "Engine started" << endl;
         engineStarted = true;
     }
+
+    // Останавливает двигатель
     void stopEngine()
     {
+        cout << "Engine stopped" << endl;
         engineStarted = false;
+    }
+
+    /// Возвращает состояние двигателя
+    /// @return true если двигатель запущен
+    bool isEngineStarted()
+    {
+        return engineStarted;
+    }
+
+    /// Устанавливает состояние робота
+    /// @param state Состояние робота
+    void setState(Action state)
+    {
+        this->state = state;
+    }
+
+    // Опрашивает робота и вызывает выполнение действия
+    void run()
+    {
+        // Если двигатель не запущен или робот находится в состоянии IDLE, то ничего не делаем
+        if (!engineStarted || state == 4)
+        {
+            return;
+        }
+        doAction(1);
     }
 };
 
@@ -278,7 +305,7 @@ public:
         {
             cout << "ERROR OPPENING FILE!" << endl;
         }
-            
+
         Scalar lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue;
         file >> lower_purple[0] >> lower_purple[1] >> lower_purple[2];
         file >> upper_purple[0] >> upper_purple[1] >> upper_purple[2];
@@ -289,9 +316,12 @@ public:
         file.close();
         cout << "HSV values loaded from file" << endl;
 
-        cout << "lower_purple: " << lower_purple << " " << "upper_purple: " << upper_purple << endl;
-        cout << "lower_green:  " << lower_green << " " << "upper_green:  " << upper_green << endl;
-        cout << "lower_blue:   " << lower_blue << " " << "upper_blue:   " << upper_blue << endl;
+        cout << "lower_purple: " << lower_purple << " "
+             << "upper_purple: " << upper_purple << endl;
+        cout << "lower_green:  " << lower_green << " "
+             << "upper_green:  " << upper_green << endl;
+        cout << "lower_blue:   " << lower_blue << " "
+             << "upper_blue:   " << upper_blue << endl;
 
         return make_tuple(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue);
     }
@@ -311,7 +341,8 @@ public:
 
     /// Функция для отправки маски на сервер
     /// @return параметры маски (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
-    tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> sendHSVtoServer(){
+    tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> sendHSVtoServer()
+    {
         return getHSVfromFile();
     }
 };
@@ -330,6 +361,7 @@ private:
     Mat graffitiRes;
 
     bool debugMode = false;
+    double angle = 0; // Угол поворота робота относительно граффити
 
     // Уставнавливаем нижнюю и верхнюю границу цветов маркера
     Scalar lower_purple = Scalar(150, 146, 246);
@@ -463,9 +495,9 @@ private:
         }
     }
 
-    /// Ищет позицию робота
-    /// @return Кортеж из двух чисел -- X и Y позиция робота
-    tuple<int, int, float> searchForRobot(Graffiti graffiti)
+    /// Ищет позцию робота на кадре и устанавливает его позицию
+    /// @param graffiti граффити
+    void searchForRobot(Graffiti graffiti)
     {
         // Фильтруем кадр по цвету
         Mat maskPurple, maskBlue;
@@ -534,7 +566,12 @@ private:
             }
         }
 
-        double angle = 0; // Угол поворота робота (по умолчанию 0)
+        if (purple_X == 0 || purple_Y == 0 || blue_X == 0 || blue_Y == 0)
+        {
+            alphabot.SetPosition(0, 0);
+            return;
+        }
+
         // Если найдены оба контура
         if (contoursPurple.size() > 0 && contoursBlue.size() > 0)
         {
@@ -545,9 +582,51 @@ private:
         // Рисуем графику
         drawGraphics(purple_X, purple_Y, blue_X, blue_Y, angle, contoursPurple.size() > 0, contoursBlue.size() > 0, graffiti);
 
-        return {static_cast<float>((purple_X + blue_X) / 2), static_cast<float>((purple_Y + blue_Y) / 2), angle};
+        alphabot.SetPosition((purple_X + blue_X) / 2, (purple_Y + blue_Y) / 2);
+        return;
     }
 
+    // Выбирает действие для робота
+    void chooseAction()
+    {
+        // Если граффити не найдено или двигатель запущен, то робот ничего не делает
+        if (!graffiti.isExist() || !alphabot.isEngineStarted())
+        {
+            alphabot.setState(IDLE);
+            return;
+        }
+
+        // Если угол больше порогового значения, то поворачиваем робота
+        if (abs(angle) > dAngle)
+        {
+            if (angle > 0)
+            {
+                alphabot.setState(RIGHT);
+                return;
+            }
+            else
+            {
+                alphabot.setState(LEFT);
+                return;
+            }
+        }
+
+        // Вычисляем расстояние до граффити
+        double dist = sqrt(pow(graffiti.getPosX() - alphabot.getPosX(), 2) + pow(graffiti.getPosY() - alphabot.getPosY(), 2));
+
+        // Если расстояние больше порогового значения, то двигаемся к граффити
+        if (dist > dDist)
+        {
+            alphabot.setState(FORWARD);
+            return;
+        }
+        // Иначе мы находимся рядом с граффити, и робот начинает его чистить
+        else
+        {
+            alphabot.setState(CLEAN);
+            return;
+        }
+    }
     /// @brief Отображает исходный кадр и кадр с результатами фильтрации
     void showResults()
     {
@@ -559,10 +638,6 @@ private:
 
 public:
     Server() {}
-    Server(bool isDebug)
-    {
-        debugMode = isDebug;
-    }
 
     // Получает сообщение от камеры, отправляет роботу и отображает результаты
     void receiveMessage()
@@ -578,24 +653,26 @@ public:
         tie(xGraffiti, yGraffiti) = searchForGraffiti();
 
         // Создаем объект граффити
-        graffiti.setState(xGraffiti, yGraffiti, true);
+        if (xGraffiti != -1 && yGraffiti != -1)
+        {
+            graffiti.setState(xGraffiti, yGraffiti, true);
+        }
+        else
+        {
+            graffiti.setState(-1, -1, false);
+        }
 
         // Вычисляем позицию робота
-        int x, y;
-        float angle;
-        tie(x, y, angle) = searchForRobot(graffiti);
+        searchForRobot(graffiti);
+        chooseAction();
+
+        if (!alphabot.isEngineStarted() && alphabot.getPosX() != 0 && alphabot.getPosY() != 0)
+            alphabot.startEngine();
+        else if (alphabot.isEngineStarted() && (alphabot.getPosX() == 0 || alphabot.getPosY() == 0))
+            alphabot.stopEngine();
 
         // Отображаем результаты
         showResults();
-
-        // Отправляем сообщение роботу
-        sendMessage(graffiti, x, y, angle);
-    }
-
-    // Отправляет сообщение роботу
-    void sendMessage(Graffiti graffiti, int x, int y, float angle = 0)
-    {
-        alphabot.recieveMessage(graffiti, x, y, angle);
     }
 
     // Отправляет изображение с камеры в генератор маски
@@ -664,12 +741,18 @@ public:
             upper_green = Scalar(hMax, sMax, vMax);
         }
     }
+
+    // Запускает опрос робота
+    void alphabotRun()
+    {
+        alphabot.run();
+    }
 };
 
 int main()
 {
     bool isDebug = false;
-    Server server(isDebug);
+    Server server;
 
     while (true)
     {
@@ -712,6 +795,11 @@ int main()
             {
                 server.recieveHSVFromThresholdGenerator();
             }
+        }
+        else
+        {
+            // Опрашиваем робота
+            server.alphabotRun();
         }
 
         // Если нажата ESC, то выходим из программы
