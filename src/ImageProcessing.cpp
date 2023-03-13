@@ -49,15 +49,15 @@ void ThresholdGenerator::trackBar()
 {
     namedWindow("Threshold", WINDOW_NORMAL);
     // Создаем трекбары для настройки фильтра
-    createTrackbar("Hue Min", "Threshold", &hMin, 179);
-    createTrackbar("Hue Max", "Threshold", &hMax, 179);
-    createTrackbar("Sat Min", "Threshold", &sMin, 255);
-    createTrackbar("Sat Max", "Threshold", &sMax, 255);
-    createTrackbar("Val Min", "Threshold", &vMin, 255);
-    createTrackbar("Val Max", "Threshold", &vMax, 255);
+    createTrackbar("Hue Min", "Threshold", &lowerHSV[0], 179);
+    createTrackbar("Hue Max", "Threshold", &upperHSV[0], 179);
+    createTrackbar("Sat Min", "Threshold", &lowerHSV[1], 255);
+    createTrackbar("Sat Max", "Threshold", &upperHSV[1], 255);
+    createTrackbar("Val Min", "Threshold", &lowerHSV[2], 255);
+    createTrackbar("Val Max", "Threshold", &upperHSV[2], 255);
 }
 
-void ThresholdGenerator::saveHSVtoFile(vector<Scalar> hsvValues)
+void ThresholdGenerator::saveHSVtoFile(vector<Scalar> lowerHSV, vector<Scalar> upperHSV)
 {
     ofstream file;
     file.open("../../docs/hsvValues.txt");
@@ -69,41 +69,45 @@ void ThresholdGenerator::saveHSVtoFile(vector<Scalar> hsvValues)
     }
 
     // Записываем в файл значения нижней и верхней границы цветов
-    for (int i = 0; i < hsvValues.size(); i++)
+    for (int i = 0; i < lowerHSV.size(); i++)
     {
-        file << hsvValues[i][0] << " " << hsvValues[i][1] << " " << hsvValues[i][2] << endl;
+        file << lowerHSV[i][0] << " " << lowerHSV[i][1] << " " << lowerHSV[i][2] << endl;
+        file << upperHSV[i][0] << " " << upperHSV[i][1] << " " << upperHSV[i][2] << endl;
     }
     cout << "HSV values saved to file" << endl;
     file.close();
 }
 
-tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> ThresholdGenerator::getHSVfromFile()
+vector<vector<Scalar>> ThresholdGenerator::getHSVfromFile()
 {
     ifstream file;
     file.open("../../docs/hsvValues.txt");
+
     if (!file.is_open())
     {
-        cout << "ERROR OPPENING FILE!" << endl;
+        cout << "Error opening file" << endl;
+        return {};
     }
 
-    Scalar lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue;
-    file >> lower_purple[0] >> lower_purple[1] >> lower_purple[2];
-    file >> upper_purple[0] >> upper_purple[1] >> upper_purple[2];
-    file >> lower_green[0] >> lower_green[1] >> lower_green[2];
-    file >> upper_green[0] >> upper_green[1] >> upper_green[2];
-    file >> lower_blue[0] >> lower_blue[1] >> lower_blue[2];
-    file >> upper_blue[0] >> upper_blue[1] >> upper_blue[2];
+    vector<vector<Scalar>> hsvValues;
+    vector<Scalar> lowerHSV;
+    vector<Scalar> upperHSV;
+
+    // Считываем значения из файла
+    while (!file.eof())
+    {
+        int hMin, sMin, vMin, hMax, sMax, vMax;
+        file >> hMin >> sMin >> vMin >> hMax >> sMax >> vMax;
+        lowerHSV.push_back(Scalar(hMin, sMin, vMin));
+        upperHSV.push_back(Scalar(hMax, sMax, vMax));
+    }
     file.close();
-    cout << "HSV values loaded from file" << endl;
 
-    cout << "lower_purple: " << lower_purple << " "
-         << "upper_purple: " << upper_purple << endl;
-    cout << "lower_green:  " << lower_green << " "
-         << "upper_green:  " << upper_green << endl;
-    cout << "lower_blue:   " << lower_blue << " "
-         << "upper_blue:   " << upper_blue << endl;
+    // Записываем значения в вектор
+    hsvValues.push_back(lowerHSV);
+    hsvValues.push_back(upperHSV);
 
-    return make_tuple(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue);
+    return hsvValues;
 }
 
 void ThresholdGenerator::recieveImage(const Mat &hsv, const Mat &frame)
@@ -112,18 +116,19 @@ void ThresholdGenerator::recieveImage(const Mat &hsv, const Mat &frame)
     this->frame = frame;
 
     // Задаем маску
-    inRange(hsv, Scalar(hMin, sMin, vMin), Scalar(hMax, sMax, vMax), mask);
+    inRange(hsv, Scalar(lowerHSV[0], lowerHSV[1], lowerHSV[2]), 
+                 Scalar(upperHSV[0], upperHSV[1], upperHSV[2]), mask);
 
     // Отображаем результаты
     imshow("Mask", mask);
 }
 
-tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> ThresholdGenerator::sendHSVtoServer()
+vector<vector<Scalar>> ThresholdGenerator::sendHSVtoServer()
 {
     return getHSVfromFile();
 }
 
 tuple<int, int, int, int, int, int> ThresholdGenerator::getHSV()
 {
-    return make_tuple(hMin, hMax, sMin, sMax, vMin, vMax);
+    return make_tuple(lowerHSV[0], lowerHSV[1], lowerHSV[2], upperHSV[0], upperHSV[1], upperHSV[2]);
 }

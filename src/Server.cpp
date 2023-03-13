@@ -14,7 +14,7 @@ using namespace cv;
 tuple<int, int> Server::searchForGraffiti()
 {
     Mat maskGreen;
-    inRange(hsv, lower_green, upper_green, maskGreen);
+    inRange(hsv, lowerHSV[1], upperHSV[1], maskGreen);
 
     // Накладываем маску на изображение
     graffitiRes = Mat::zeros(frame.size(), CV_8UC3);
@@ -121,8 +121,9 @@ void Server::searchForRobot(Graffiti graffiti)
 {
     // Фильтруем кадр по цвету
     Mat maskPurple, maskBlue;
-    inRange(hsv, lower_purple, upper_purple, maskPurple);
-    inRange(hsv, lower_blue, upper_blue, maskBlue);
+
+    inRange(hsv, lowerHSV[0], upperHSV[0], maskPurple);
+    inRange(hsv, lowerHSV[2], upperHSV[2], maskBlue);
 
     Mat mask = maskBlue | maskPurple;
 
@@ -302,12 +303,17 @@ void Server::sendImageToThresholdGenerator()
 
 void Server::sendHSVToThresholdGenerator()
 {
-    thresholdGenerator.saveHSVtoFile(vector<Scalar>{lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue});
+    thresholdGenerator.saveHSVtoFile(lowerHSV, upperHSV);
 }
 
 void Server::recieveHSVFromThresholdGenerator()
 {
-    tie(lower_purple, upper_purple, lower_green, upper_green, lower_blue, upper_blue) = thresholdGenerator.sendHSVtoServer();
+    cout << "Loaded HSV from file" << endl;
+    vector<vector<Scalar>> tmp = thresholdGenerator.sendHSVtoServer();
+    lowerHSV = tmp[0];
+    upperHSV = tmp[1];
+    cout << "Low " << lowerHSV[0] << " " << lowerHSV[1] << " " << lowerHSV[2] << endl;
+    cout << "Up  " << upperHSV[0] << " " << upperHSV[1] << " " << upperHSV[2] << endl;
 }
 
 void Server::setDebugMode(bool isDebug)
@@ -342,18 +348,18 @@ void Server::setHSV(string color)
     cout << color << " " << hMin << " " << sMin << " " << vMin << " " << hMax << " " << sMax << " " << vMax << endl;
     if (color == "purple")
     {
-        lower_purple = Scalar(hMin, sMin, vMin);
-        upper_purple = Scalar(hMax, sMax, vMax);
+        lowerHSV[0] = Scalar(hMin, sMin, vMin);
+        upperHSV[0] = Scalar(hMax, sMax, vMax);
     }
-    if (color == "blue")
+    else if (color == "green")
     {
-        lower_blue = Scalar(hMin, sMin, vMin);
-        upper_blue = Scalar(hMax, sMax, vMax);
+        lowerHSV[1] = Scalar(hMin, sMin, vMin);
+        upperHSV[1] = Scalar(hMax, sMax, vMax);
     }
-    if (color == "green")
+    else if (color == "blue")
     {
-        lower_green = Scalar(hMin, sMin, vMin);
-        upper_green = Scalar(hMax, sMax, vMax);
+        lowerHSV[2] = Scalar(hMin, sMin, vMin);
+        upperHSV[2] = Scalar(hMax, sMax, vMax);
     }
 }
 

@@ -1,16 +1,15 @@
 @startuml Alphabot
 
 enum Action {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT,
+    FORWARD
+    LEFT
+    RIGHT
     CLEAN
+    IDLE
 }
 
 class EngineController {
     + moveForward(int time)
-    + moveBackwards(int time)
     + moveLeft(int time)
     + moveRight(int time)
 }
@@ -40,34 +39,36 @@ class Graffiti {
 }
 
 class Alphabot {
-    - engineStarted: bool
     - engineController: EngineController
     - cleaner: Cleaner
+    - engineStarted: bool
     - posX: int
     - posY: int
-    - angle: float
-    - target: Graffiti
-    - chooseAction(Graffiti curTarget): Action
-    - doAction(Action action, int time)
-    + Alphabot()
-    + recieveMessage(Graffiti graffiti, int x, int y, float agl)
+    - state: Action
+    - doAction(int time)
     + SetPosition(int x, int y)
     + getPosX(): int
     + getPosY(): int
     + startEngine()
     + stopEngine()
+    + isEngineStarted(): bool
+    + setState(int state)
+    + run()
 }
 
 class ThresholdGenerator {
     - mask: Mat
     - hsv: Mat
     - frame: Mat
+    - lowerHSV: vector<int>
+    - upperHSV: vector<int>
+    - getHSVfromFile(): vector<vector<Scalar>>
     + ThresholdGenerator()
-    + trackBar()
-    + saveHSVtoFile(vector<Scalar> hsvValues)
-    + getHSVfromFile(): tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>
-    + recieveImage(const Mat &hsv, const Mat &frame)
-    + sendHSVtoServer(): tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>
+    + trackBar(): void
+    + saveHSVtoFile(lowerHSV: vector<Scalar>, upperHSV: vector<Scalar>): void
+    + recieveImage(hsv: const Mat&, frame: const Mat&): void
+    + sendHSVtoServer(): vector<vector<Scalar>>
+    + getHSV(): tuple<int, int, int, int, int, int>
 }
 
 class Server {
@@ -80,36 +81,32 @@ class Server {
 - robotRes: Mat
 - graffitiRes: Mat
 - debugMode: bool
-- lower_purple: Scalar
-- upper_purple: Scalar
-- lower_blue: Scalar
-- upper_blue: Scalar
-- lower_green: Scalar
-- upper_green: Scalar
+- angle: double
+- lowerHSV: vector<Scalar>
+- upperHSV: vector<Scalar>
 - searchForGraffiti(): tuple<int, int>
 - AlphabotAngleCalc(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, target_X: int, target_Y: int): double
-- drawGraphics(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, angle: double, purpleContour: bool, blueContour: bool, graffiti: Graffiti)
-- searchForRobot(graffiti: Graffiti): tuple<int, int, float>
+- drawGraphics(blue_X: int, blue_Y: int, purple_X: int, purple_Y: int, angle: double, purpleContour: bool, blueContour: bool, graffiti: Graffiti)
+- searchForRobot(graffiti: Graffiti)
+- choseAction()
 - showResults()
 + Server()
-+ Server(isDebug: bool)
 + receiveMessage()
-+ sendMessage(graffiti: Graffiti, x: int, y: int, angle: float = 0)
 + sendImageToThresholdGenerator()
 + sendHSVToThresholdGenerator()
 + recieveHSVFromThresholdGenerator()
 + setDebugMode(isDebug: bool)
 + setHSV(color: string)
-
++ alphabotRun()
 }
 
 EngineController --* Alphabot
 Cleaner --* Alphabot
-Graffiti --* Alphabot
-Action --> Alphabot
+Alphabot *- Graffiti
+Action -> Alphabot
 Action --> Server
 Graffiti --* Server
-ThresholdGenerator --* Server
+Server *- ThresholdGenerator
 Camera -* Server
-Server *- Alphabot
+Alphabot --* Server
 @enduml

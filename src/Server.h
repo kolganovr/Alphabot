@@ -25,15 +25,11 @@ private:
     double angle = 0; // Угол поворота робота относительно граффити
 
     // Уставнавливаем нижнюю и верхнюю границу цветов маркера
-    Scalar lower_purple = Scalar(150, 146, 246);
-    Scalar upper_purple = Scalar(179, 219, 255);
-
-    Scalar lower_green = Scalar(50, 116, 40);
-    Scalar upper_green = Scalar(93, 222, 147);
-
-    Scalar lower_blue = Scalar(91, 179, 125);
-    Scalar upper_blue = Scalar(108, 255, 255);
-
+    // Порядок: красный, зеленый, синий
+    vector<Scalar> lowerHSV = {Scalar(150, 146, 246), Scalar(50, 116, 40), Scalar(91, 179, 125)};
+    // Порядок: красный, зеленый, синий
+    vector<Scalar> upperHSV = {Scalar(179, 219, 255), Scalar(93, 222, 147), Scalar(108, 255, 255)};
+    
     /// Поиск граффити на изображении
     /// @return координаты граффити
     tuple<int, int> searchForGraffiti();

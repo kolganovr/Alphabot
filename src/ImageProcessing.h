@@ -35,7 +35,15 @@ private:
     Mat hsv;
     Mat frame;
 
-    int hMin = 0, hMax = 179, sMin = 0, sMax = 255, vMin = 0, vMax = 255; // Переменные для настройки фильтра HSV
+    // Нижние значения HSV для трекбаров
+    vector<int> lowerHSV = {0, 0, 0};
+    // Верхние значения HSV для трекбаров
+    vector<int> upperHSV = {179, 255, 255};
+
+    /// Функция для получения значений маски из файла
+    /// @return два вектора значений маски сначала для нижней границы, потом для верхней границы 
+    /// (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
+    vector<vector<Scalar>> getHSVfromFile();
 
 public:
     ThresholdGenerator();
@@ -44,19 +52,17 @@ public:
     void trackBar();
 
     /// Функция для сохранений значений маски в файл
-    /// @param hsvValues вектор значений маски для каждого цвета (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
-    void saveHSVtoFile(vector<Scalar> hsvValues);
-
-    /// Функция для получения значений маски из файла
-    /// @return вектор значений маски для каждого цвета (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
-    tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> getHSVfromFile();
+    /// @param lowerHSV вектор значений нижней границы маски для каждого цвета (hMin, sMin, vMin) в порядке: красный, зеленый, синий
+    /// @param upperHSV вектор значений верхней границы маски для каждого цвета (hMax, sMax, vMax) в порядке: красный, зеленый, синий
+    void saveHSVtoFile(vector<Scalar> lowerHSV, vector<Scalar> upperHSV);
 
     /// Функция для получения изображения с камеры
     void recieveImage(const Mat &hsv, const Mat &frame);
 
     /// Функция для отправки маски на сервер
-    /// @return параметры маски (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
-    tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar> sendHSVtoServer();
+    /// @return вектор значений маски сначала для нижней границы, потом для верхней границы
+    /// (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
+    vector<vector<Scalar>> sendHSVtoServer();
 
     /// Функция для получения значений с трекбаров
     tuple<int, int, int, int, int, int> getHSV();
