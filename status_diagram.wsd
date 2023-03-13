@@ -1,13 +1,19 @@
-@startuml Status_Diagram
+@startuml Status Diagram
+title Server::choseAction() Status Diagram
+
+[*] ---> IDLE : !graffiti.isExist() || !alphabot.isEngineStarted()
+IDLE --> [*]
 
 
-Target --> Running
-Running --> Waiting
-Running --> Move Forward
-Running --> Rotate
-Running --> Clean
+[*] --> TURN : abs(angle) > dAngle
+TURN --> LEFT : angle < 0
+LEFT --> [*]
+TURN --> RIGHT : angle > 0
+RIGHT --> [*]
 
+[*] --> FORWARD : dist > dDist
+FORWARD --> [*]
 
-
+[*] --> CLEAN : dist <= dDist
+CLEAN --> [*]
 @enduml
-

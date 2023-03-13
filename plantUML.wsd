@@ -100,6 +100,14 @@ class Server {
 + alphabotRun()
 }
 
+class KeyParser {
+    -server : Server*
+    -debugMode : bool
+    -keys : struct
+    +KeyParser(server: Server*)
+    +parseKeys() : bool
+}
+
 EngineController --* Alphabot
 Cleaner --* Alphabot
 Alphabot *- Graffiti
@@ -109,4 +117,5 @@ Graffiti --* Server
 Server *- ThresholdGenerator
 Camera -* Server
 Alphabot --* Server
+Server --* KeyParser
 @enduml
