@@ -14,6 +14,8 @@ add_executable(Alphabot
     src/ImageProcessing.h
     src/Server.cpp
     src/Server.h
+    src/KeyParser.cpp
+    src/KeyParser.h
 )
 
 target_link_libraries(Alphabot ${OpenCV_LIBS})
