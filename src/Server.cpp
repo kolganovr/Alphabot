@@ -96,24 +96,20 @@ void Server::drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, do
         circle(robotRes, Point(blue_X, blue_Y), 10, Scalar(255, 0, 0), -1);
     }
 
-    if (purpleContour && blueContour)
-    {
-        // Пишем текст с углом поворота
-        putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
-    }
-
     // Рисуем маленький белый круг по центру цели
     if (graffiti.isExist())
         circle(robotRes, Point(graffiti.getPosX(), graffiti.getPosY()), 10, Scalar(255, 255, 255), -1);
 
-    if (purpleContour && blueContour)
+    if (purpleContour && blueContour && graffiti.isExist())
     {
-
         // Рисуем линию, соединяющую центр робота и фиолетовый маркер
         line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(purple_X, purple_Y), Scalar(255, 255, 255), 1);
 
         // Рисуем линию, соединяющую центр робота и центр граффити
         line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
+    
+        // Пишем текст с углом поворота
+        putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
     }
 }
 
@@ -345,7 +341,7 @@ void Server::setHSV(string color)
 {
     int hMin, sMin, vMin, hMax, sMax, vMax;
     tie(hMin, sMin, vMin, hMax, sMax, vMax) = thresholdGenerator.getHSV();
-    cout << color << " " << hMin << " " << sMin << " " << vMin << " " << hMax << " " << sMax << " " << vMax << endl;
+    cout << "New HSV for " << color << ": " << hMin << " " << sMin << " " << vMin << " " << hMax << " " << sMax << " " << vMax << endl;
     if (color == "purple")
     {
         lowerHSV[0] = Scalar(hMin, sMin, vMin);
