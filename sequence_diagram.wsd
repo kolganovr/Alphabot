@@ -1,0 +1,86 @@
+@startuml Sequence diagram for Alphabot control
+title Alphabot control sequence diagram
+
+actor User
+participant main
+participant KeyParser
+participant Server
+participant Alphabot
+participant Graffiti
+participant Camera
+participant ThresholdGenerator
+participant EngineController
+participant Cleaner
+
+User -> main: start()
+activate main
+main -> KeyParser: KeyParser()
+activate KeyParser
+KeyParser -> Server: Server()
+activate Server
+Server -> Alphabot: Alphabot()
+activate Alphabot
+Alphabot -> EngineController: EngineController()
+activate EngineController
+Alphabot -> Cleaner: Cleaner()
+activate Cleaner
+Server -> Graffiti: Graffiti()
+activate Graffiti
+Server -> Camera: Camera()
+activate Camera
+Server -> ThresholdGenerator: ThresholdGenerator()
+activate ThresholdGenerator
+
+' Если отключен режим отладки
+loop while space is not pressed
+    KeyParser -> Server: receiveMessage()
+    Server -> Camera: sendToServer()
+    Camera -> Server: Image
+
+    ' Server ищет граффити и робота если отключен режим отладки
+    alt not debug mode
+        Server -> Server: searchForGraffiti()
+        Server -> Graffiti: setState()
+        Server -> Server: searchForAlphabot()
+        Server -> Alphabot: setState()
+        Server -> Server: choseAction()
+        Server -> Alphabot: setState()
+        Alphabot -> EngineController: doAction()
+        Alphabot -> Cleaner: doAction()
+        Server -> Server: showResult()
+        Server -> User: graphics
+    else debug mode
+        Server -> ThresholdGenerator: sendImage()
+        alt 1, 2, 3 is pressed
+            ThresholdGenerator -> Server: sendMask()
+        end
+        alt "s" is pressed
+            ThresholdGenerator -> ThresholdGenerator: saveMask()
+        end
+        alt "l" is pressed
+            ThresholdGenerator -> ThresholdGenerator: loadMask()
+        end
+    end
+
+    ' Если нажата клавиша "space" выходим из цикла
+    alt space is pressed
+        KeyParser -> Server: ~Server()
+        Server -> Alphabot: ~Alphabot()
+        Alphabot -> EngineController: ~EngineController()
+        deactivate EngineController
+        Alphabot -> Cleaner: ~Cleaner()
+        deactivate Cleaner
+        deactivate Alphabot
+        Server -> Graffiti: ~Graffiti()
+        deactivate Graffiti
+        Server -> Camera: ~Camera()
+        deactivate Camera
+        Server -> ThresholdGenerator: ~ThresholdGenerator()
+        deactivate ThresholdGenerator
+        deactivate Server
+        main -> KeyParser: ~KeyParser()
+        deactivate KeyParser
+        deactivate main
+    end
+end
+@enduml
