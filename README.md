@@ -41,4 +41,4 @@
 ## Sequence diagram
 Примерная диграмма работы программы
 
-![Sequence diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/sequece_diagram.wsd)
+![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/sequence_diagram.wsd)
