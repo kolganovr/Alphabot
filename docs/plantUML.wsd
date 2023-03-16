@@ -1,0 +1,121 @@
+@startuml Alphabot
+
+enum Action {
+    FORWARD
+    LEFT
+    RIGHT
+    CLEAN
+    IDLE
+}
+
+class EngineController {
+    + moveForward(int time)
+    + moveLeft(int time)
+    + moveRight(int time)
+}
+
+class Cleaner {
+    + perform()
+}
+
+class Camera {
+    - cap: VideoCapture
+    - getImage(): tuple<Mat, Mat>
+    + Camera()
+    + ~Camera()
+    + sendToServer(): tuple<Mat, Mat>
+}
+
+class Graffiti {
+    - exist: bool
+    - posX: int
+    - posY: int
+    + Graffiti()
+    + Graffiti(int x, int y)
+    + setState(int x, int y, bool exists)
+    + getPosX(): int
+    + getPosY(): int
+    + isExist(): bool
+}
+
+class Alphabot {
+    - engineController: EngineController
+    - cleaner: Cleaner
+    - engineStarted: bool
+    - posX: int
+    - posY: int
+    - state: Action
+    - doAction(int time)
+    + SetPosition(int x, int y)
+    + getPosX(): int
+    + getPosY(): int
+    + startEngine()
+    + stopEngine()
+    + isEngineStarted(): bool
+    + setState(int state)
+    + run()
+}
+
+class ThresholdGenerator {
+    - mask: Mat
+    - hsv: Mat
+    - frame: Mat
+    - lowerHSV: vector<int>
+    - upperHSV: vector<int>
+    - getHSVfromFile(): vector<vector<Scalar>>
+    + ThresholdGenerator()
+    + trackBar(): void
+    + saveHSVtoFile(lowerHSV: vector<Scalar>, upperHSV: vector<Scalar>): void
+    + recieveImage(hsv: const Mat&, frame: const Mat&): void
+    + sendHSVtoServer(): vector<vector<Scalar>>
+    + getHSV(): tuple<int, int, int, int, int, int>
+}
+
+class Server {
+- alphabot: Alphabot
+- graffiti: Graffiti
+- camera: Camera
+- thresholdGenerator: ThresholdGenerator
+- frame: Mat
+- hsv: Mat
+- robotRes: Mat
+- graffitiRes: Mat
+- debugMode: bool
+- angle: double
+- lowerHSV: vector<Scalar>
+- upperHSV: vector<Scalar>
+- searchForGraffiti(): tuple<int, int>
+- AlphabotAngleCalc(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, target_X: int, target_Y: int): double
+- drawGraphics(blue_X: int, blue_Y: int, purple_X: int, purple_Y: int, angle: double, purpleContour: bool, blueContour: bool, graffiti: Graffiti)
+- searchForRobot(graffiti: Graffiti)
+- choseAction()
+- showResults()
++ Server()
++ receiveMessage()
++ sendImageToThresholdGenerator()
++ sendHSVToThresholdGenerator()
++ recieveHSVFromThresholdGenerator()
++ setDebugMode(isDebug: bool)
++ setHSV(color: string)
++ alphabotRun()
+}
+
+class KeyParser {
+    -server : Server*
+    -debugMode : bool
+    -keys : struct
+    +KeyParser(server: Server*)
+    +parseKeys() : bool
+}
+
+EngineController --* Alphabot
+Cleaner --* Alphabot
+Alphabot *- Graffiti
+Action -> Alphabot
+Action --> Server
+Graffiti --* Server
+Server *- ThresholdGenerator
+Camera -* Server
+Alphabot --* Server
+Server --* KeyParser
+@enduml
