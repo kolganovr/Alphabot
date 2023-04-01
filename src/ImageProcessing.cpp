@@ -47,9 +47,22 @@ ThresholdGenerator::ThresholdGenerator() {}
 
 void ThresholdGenerator::trackBar()
 {
+    // reset HSV values
+    lowerHSV = {0, 0, 0};
+    upperHSV = {179, 255, 255};
+    // Создаем hue reference image
+    Mat hueRef(1, 179, CV_8UC3);
+    for (int i = 0; i < 179; i++)
+    {
+        hueRef.at<Vec3b>(0, i) = Vec3b(i, 255, 255);
+    }
+    cvtColor(hueRef, hueRef, COLOR_HSV2BGR);
+    resize(hueRef, hueRef, Size(160, 20));
+    
     namedWindow("Threshold", WINDOW_NORMAL);
     // Создаем трекбары для настройки фильтра
     createTrackbar("Hue Min", "Threshold", &lowerHSV[0], 179);
+    imshow("HUE", hueRef);
     createTrackbar("Hue Max", "Threshold", &upperHSV[0], 179);
     createTrackbar("Sat Min", "Threshold", &lowerHSV[1], 255);
     createTrackbar("Sat Max", "Threshold", &upperHSV[1], 255);

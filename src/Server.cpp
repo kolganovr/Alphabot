@@ -334,6 +334,7 @@ void Server::setDebugMode(bool isDebug)
 
         destroyWindow("Threshold");
         destroyWindow("Mask");
+        destroyWindow("HUE");
     }
 }
 

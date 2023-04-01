@@ -6,7 +6,14 @@
 using namespace cv;
 
 // Действия которые может выполнять робот
-enum Action;
+enum Action
+{
+    FORWARD,
+    LEFT,
+    RIGHT,
+    CLEAN,
+    IDLE
+};
 
 // Класс для управления двигателями
 class EngineController

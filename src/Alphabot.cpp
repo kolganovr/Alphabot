@@ -3,15 +3,6 @@
 
 using namespace std;
 
-enum Action
-{
-    FORWARD,
-    LEFT,
-    RIGHT,
-    CLEAN,
-    IDLE
-};
-
 void EngineController::moveForward(int time)
 {
     cout << "moveForward" << endl;
