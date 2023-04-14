@@ -364,3 +364,8 @@ void Server::alphabotRun()
 {
     alphabot.run();
 }
+
+void Server::setCameraType()
+{
+    camera.changeCameraType();
+}

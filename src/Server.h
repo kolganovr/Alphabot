@@ -26,7 +26,7 @@ private:
 
     // Уставнавливаем нижнюю и верхнюю границу цветов маркера
     // Порядок: красный, зеленый, синий
-    vector<Scalar> lowerHSV = {Scalar(150, 146, 246), Scalar(50, 116, 40), Scalar(91, 179, 125)};
+    vector<Scalar> lowerHSV = {Scalar(150, 90, 197), Scalar(50, 116, 40), Scalar(91, 179, 125)};
     // Порядок: красный, зеленый, синий
     vector<Scalar> upperHSV = {Scalar(179, 219, 255), Scalar(93, 222, 147), Scalar(108, 255, 255)};
     
@@ -87,4 +87,7 @@ public:
 
     // Запускает опрос робота
     void alphabotRun();
+
+    // Переключает режим камеры
+    void setCameraType();
 };

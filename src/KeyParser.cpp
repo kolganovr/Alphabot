@@ -17,6 +17,11 @@ bool KeyParser::parseKeys()
         cout << "Debug mode: " << debugMode << endl;
     }
 
+    if (key == keys.c)
+    {
+        server->setCameraType();
+    }
+
     server->receiveMessage();
 
     if (debugMode)

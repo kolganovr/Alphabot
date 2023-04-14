@@ -18,6 +18,7 @@ private:
         const char s = 115; // s
         const char l = 108; // l
         const char esc = 27; // escape
+        const char c = 99; // c
     } keys;
 
 

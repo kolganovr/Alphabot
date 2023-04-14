@@ -14,6 +14,13 @@ private:
     // VideoCapture объект для считывания изображения с камеры
     VideoCapture cap;
 
+    // Выбор камеры (1 - встроенная, 0 - внешняя)
+    bool isWebcam = true;
+    bool ipEntered = false;
+
+    // IP адрес внешней камеры
+    string IP_CAM = "http://192.168.1.4:8080/video";
+
     /// Получает изображение с камеры
     /// @return Кортеж из двух матриц -- HSV и frame
     tuple<Mat, Mat> getImage();
@@ -26,6 +33,18 @@ public:
     /// Отправляем изображение на сервер
     /// @return Кортеж из двух матриц -- HSV и frame
     tuple<Mat, Mat> sendToServer();
+
+    /// Устанавливает камеру
+    /// @param isWebcam true - встроенная, false - внешняя
+    void changeCameraType();
+
+    /// Устанавливает IP адрес внешней камеры
+    /// @param ip IP адрес внешней камеры
+    void setIPcam(string ip);
+
+    /// Возвращает тип камеры
+    /// @return true - встроенная, false - внешняя
+    bool getCameraType();
 };
 
 class ThresholdGenerator

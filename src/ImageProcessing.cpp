@@ -1,3 +1,5 @@
+#include <opencv2/opencv.hpp>
+
 #include "ImageProcessing.h"
 
 using namespace std;
@@ -43,6 +45,57 @@ tuple<Mat, Mat> Camera::sendToServer()
     return getImage();
 }
 
+void Camera::changeCameraType()
+{
+    string statusOfConnection = "";
+    isWebcam = !isWebcam;
+    cap.release();
+    if (isWebcam)
+    {
+        cap.open(0);
+    }
+    else
+    {
+        cout << "IP_CAM: " << IP_CAM << endl;
+        if (!ipEntered)
+        {
+            cout << "Press 'c' in 5 seconds to edit IP or default ip will be used..." << endl;
+            char ch = cv::waitKey(5000);
+
+            if (ch == 'c')
+            {
+                cout << "Enter IP address: ";
+                cin >> IP_CAM;
+            }
+            else
+                cout << "Using default IP address: " << IP_CAM << endl;
+        }
+        // Попытаться подключиться к камере по IP, если ошибка, то внешняя камера не подключена
+        cap.open(IP_CAM);
+        if (!cap.isOpened())
+        {
+            cout << "IP camera not found" << endl;
+            isWebcam = true;
+            cap.open(0);
+            statusOfConnection = "doesn't ";
+        }
+        // Если подключение успешно, то больше не нужно вводить IP адрес
+        else
+            ipEntered = true;
+    }
+    cout << "Camera type " << statusOfConnection << "changed" << endl;
+}
+
+void Camera::setIPcam(string ip)
+{
+    IP_CAM = ip;
+}
+
+bool Camera::getCameraType()
+{
+    return isWebcam;
+}
+
 ThresholdGenerator::ThresholdGenerator() {}
 
 void ThresholdGenerator::trackBar()
@@ -58,7 +111,7 @@ void ThresholdGenerator::trackBar()
     }
     cvtColor(hueRef, hueRef, COLOR_HSV2BGR);
     resize(hueRef, hueRef, Size(160, 20));
-    
+
     namedWindow("Threshold", WINDOW_NORMAL);
     // Создаем трекбары для настройки фильтра
     createTrackbar("Hue Min", "Threshold", &lowerHSV[0], 179);
@@ -129,8 +182,8 @@ void ThresholdGenerator::recieveImage(const Mat &hsv, const Mat &frame)
     this->frame = frame;
 
     // Задаем маску
-    inRange(hsv, Scalar(lowerHSV[0], lowerHSV[1], lowerHSV[2]), 
-                 Scalar(upperHSV[0], upperHSV[1], upperHSV[2]), mask);
+    inRange(hsv, Scalar(lowerHSV[0], lowerHSV[1], lowerHSV[2]),
+            Scalar(upperHSV[0], upperHSV[1], upperHSV[2]), mask);
 
     // Отображаем результаты
     imshow("Mask", mask);

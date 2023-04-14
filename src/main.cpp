@@ -1,4 +1,5 @@
 #include <iostream>
+// #include <mosquitto.h>
 
 #include "Server.h"
 #include "Alphabot.h"
@@ -10,6 +11,7 @@ int main()
 {
     Server server;
     KeyParser keyParser(&server);
+    std::cout << "Started!" << std::endl;
 
     while (true)
     {
