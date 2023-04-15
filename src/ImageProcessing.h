@@ -16,14 +16,19 @@ private:
 
     // Выбор камеры (1 - встроенная, 0 - внешняя)
     bool isWebcam = true;
-    bool ipEntered = false;
 
     // IP адрес внешней камеры
-    string IP_CAM = "http://192.168.1.4:8080/video";
+    string IP_CAM = "";
 
     /// Получает изображение с камеры
     /// @return Кортеж из двух матриц -- HSV и frame
     tuple<Mat, Mat> getImage();
+
+    // Подключаемся к встроеенной камере
+    void connectToWebcam();
+
+    // Подключаемся к внешней камере
+    void connectToIPcam();
 
 public:
     Camera();

@@ -19,13 +19,38 @@ tuple<Mat, Mat> Camera::getImage()
     return make_tuple(hsv, frame);
 }
 
-Camera::Camera()
+void Camera::connectToWebcam()
 {
-    // Инициализируем камеру
+    isWebcam = true;
+    cout << "Using webcam" << endl;
+    // Подключаемся к встроенной камере
     cap.open(0);
     // Задаём размеры изображения
     cap.set(CAP_PROP_FRAME_WIDTH, 640);
     cap.set(CAP_PROP_FRAME_HEIGHT, 480);
+}
+void Camera::connectToIPcam()
+{
+    cout << "IP_CAM: " << IP_CAM << endl;
+
+    // Попытаться подключиться к камере по IP, если ошибка, то внешняя камера не подключена
+    cap.open(IP_CAM);
+    if (!cap.isOpened())
+    {
+        cout << "IP camera not found" << endl;
+        connectToWebcam();
+    }
+    else
+    {
+        cout << "Using IP camera" << endl;
+        isWebcam = false;
+    }
+}
+
+Camera::Camera()
+{
+    // Подключаемся к встроенной камере
+    connectToWebcam();
 
     // Создаем окна для отображения исходного кадра и фильтрованного
     namedWindow("Original", WINDOW_NORMAL);
@@ -52,36 +77,24 @@ void Camera::changeCameraType()
     cap.release();
     if (isWebcam)
     {
-        cap.open(0);
+        connectToWebcam();
     }
     else
     {
-        cout << "IP_CAM: " << IP_CAM << endl;
-        if (!ipEntered)
+        // Считываем IP адрес внешней камеры из файла config.txt в папке /docs
+        ifstream file("../../docs/config.txt");
+        if (file.is_open())
         {
-            cout << "Press 'c' in 5 seconds to edit IP or default ip will be used..." << endl;
-            char ch = cv::waitKey(5000);
-
-            if (ch == 'c')
-            {
-                cout << "Enter IP address: ";
-                cin >> IP_CAM;
-            }
-            else
-                cout << "Using default IP address: " << IP_CAM << endl;
+            getline(file, IP_CAM);
+            file.close();
+            connectToIPcam();
         }
-        // Попытаться подключиться к камере по IP, если ошибка, то внешняя камера не подключена
-        cap.open(IP_CAM);
-        if (!cap.isOpened())
-        {
-            cout << "IP camera not found" << endl;
-            isWebcam = true;
-            cap.open(0);
-            statusOfConnection = "doesn't ";
-        }
-        // Если подключение успешно, то больше не нужно вводить IP адрес
         else
-            ipEntered = true;
+        {
+            cout << "Config File not found" << endl;
+            connectToWebcam();
+            return;
+        }
     }
     cout << "Camera type " << statusOfConnection << "changed" << endl;
 }
