@@ -9,9 +9,9 @@ using namespace cv;
 #define MIN_CONTOUR_AREA 200
 #define M_PI 3.1416
 #define dAngle 20
-#define dDist 10
+#define dDist 50
 
-tuple<int, int> Server::searchForGraffiti()
+Graffiti Server::searchForGraffiti()
 {
     Mat maskGreen;
     inRange(hsv, lowerHSV[1], upperHSV[1], maskGreen);
@@ -46,13 +46,17 @@ tuple<int, int> Server::searchForGraffiti()
             y = static_cast<int>(m.m01 / m.m00);
 
             // Рисуем белую точку в центре контура
-            circle(graffitiRes, Point(x, y), 1, Scalar(255, 255, 255), 2);
+            circle(robotRes, Point(x, y), 1, Scalar(255, 255, 255), 2);
+
+            // Устанавливаем координаты граффити
+            graffiti.setState(x, y, true);
 
             // Возвращаем координаты контура
-            return make_tuple(x, y);
+            return graffiti;
         }
     }
-    return make_tuple(-1, -1);
+    graffiti.setState(-1, -1, false);
+    return graffiti;
 }
 
 double Server::AlphabotAngleCalc(int purple_X, int purple_Y, int blue_X, int blue_Y, int target_X, int target_Y)
@@ -109,11 +113,11 @@ void Server::drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, do
         line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
 
         // Пишем текст с углом поворота
-        putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+        // putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
     }
 }
 
-void Server::searchForRobot(Graffiti graffiti)
+void Server::searchForRobot()
 {
     // Фильтруем кадр по цвету
     Mat maskPurple, maskBlue;
@@ -185,7 +189,7 @@ void Server::searchForRobot(Graffiti graffiti)
 
     if (purple_X == 0 || purple_Y == 0 || blue_X == 0 || blue_Y == 0)
     {
-        alphabot.SetPosition(0, 0);
+        alphabot.SetPosition(-1, -1);
         return;
     }
 
@@ -252,8 +256,14 @@ void Server::showResults()
     {
         imshow("Original", frame);
         imshow("Robot", robotRes);
-        imshow("Graffiti", graffitiRes);
     }
+}
+
+void Server::mergeFrames()
+{
+    // Объединяем изображения robotRes и graffitiRes в одно изображение robotRes
+    if (showGraphics)
+        robotRes = robotRes | graffitiRes;
 }
 
 Server::Server() {}
@@ -267,28 +277,20 @@ void Server::receiveMessage()
         return;
 
     // Ищем граффити
-    int xGraffiti, yGraffiti;
-    tie(xGraffiti, yGraffiti) = searchForGraffiti();
-
-    // Создаем объект граффити
-    if (xGraffiti != -1 && yGraffiti != -1)
-    {
-        graffiti.setState(xGraffiti, yGraffiti, true);
-    }
-    else
-    {
-        graffiti.setState(-1, -1, false);
-    }
+    searchForGraffiti();
 
     // Вычисляем позицию робота
-    searchForRobot(graffiti);
+    searchForRobot();
+
+    // Сливаем изображения
+    mergeFrames();
 
     // Выбираем действие
     choseAction();
 
-    if (!alphabot.isEngineStarted() && alphabot.getPosX() != 0 && alphabot.getPosY() != 0)
+    if (!alphabot.isEngineStarted() && alphabot.getPosX() != -1 && alphabot.getPosY() != -1)
         alphabot.startEngine();
-    else if (alphabot.isEngineStarted() && (alphabot.getPosX() == 0 || alphabot.getPosY() == 0))
+    else if (alphabot.isEngineStarted() && (alphabot.getPosX() == -1 || alphabot.getPosY() == -1))
         alphabot.stopEngine();
 
     // Отображаем результаты
@@ -328,13 +330,11 @@ void Server::setDebugMode(bool isDebug)
 
         destroyWindow("Original");
         destroyWindow("Robot");
-        destroyWindow("Graffiti");
     }
     else
     {
         namedWindow("Original", WINDOW_NORMAL);
         namedWindow("Robot", WINDOW_NORMAL);
-        namedWindow("Graffiti", WINDOW_NORMAL);
 
         destroyWindow("Threshold");
         destroyWindow("Mask");

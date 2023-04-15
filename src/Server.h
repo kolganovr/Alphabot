@@ -25,15 +25,12 @@ private:
     double angle = 0; // Угол поворота робота относительно граффити
     bool showGraphics = false; // Показывать графику на изображении
 
-    // Уставнавливаем нижнюю и верхнюю границу цветов маркера
+    // Уставнавливаем нижнюю границу цветов маркера
     // Порядок: красный, зеленый, синий
     vector<Scalar> lowerHSV = {Scalar(150, 90, 197), Scalar(50, 116, 40), Scalar(91, 179, 125)};
+    // Уставнавливаем верхнюю границу цветов маркера
     // Порядок: красный, зеленый, синий
     vector<Scalar> upperHSV = {Scalar(179, 219, 255), Scalar(93, 222, 147), Scalar(108, 255, 255)};
-    
-    /// Поиск граффити на изображении
-    /// @return координаты граффити
-    tuple<int, int> searchForGraffiti();
 
     /// Вычисляет угол наклона робота
     /// @param puprle_X X координата фиолетовой точки
@@ -52,16 +49,21 @@ private:
     /// @param purpleContour фиолетовый маркер найден
     /// @param blueContour синий маркер найден
     void drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, double angle, bool purpleContour, bool blueContour, Graffiti graffiti);
-
-    /// Ищет позцию робота на кадре и устанавливает его позицию
-    /// @param graffiti граффити
-    void searchForRobot(Graffiti graffiti);
+    
+    // Поиск граффити на изображении
+    Graffiti searchForGraffiti();
+    
+    // Ищет позцию робота на кадре и устанавливает его позицию
+    void searchForRobot();
 
     // Выбирает действие для робота
     void choseAction();
 
-    /// @brief Отображает исходный кадр и кадр с результатами фильтрации
+    // Отображает исходный кадр и кадр с результатами фильтрации
     void showResults();
+
+    // Объединяет кадры с граффити и роботом
+    void mergeFrames();
 
 public:
     Server();
