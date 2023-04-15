@@ -107,7 +107,7 @@ void Server::drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, do
 
         // Рисуем линию, соединяющую центр робота и центр граффити
         line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
-    
+
         // Пишем текст с углом поворота
         putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
     }
@@ -196,8 +196,9 @@ void Server::searchForRobot(Graffiti graffiti)
         angle = AlphabotAngleCalc(purple_X, purple_Y, blue_X, blue_Y, graffiti.getPosX(), graffiti.getPosY());
     }
 
-    // Рисуем графику
-    drawGraphics(purple_X, purple_Y, blue_X, blue_Y, angle, contoursPurple.size() > 0, contoursBlue.size() > 0, graffiti);
+    // Рисуем графику, если нужно
+    if (showGraphics)
+        drawGraphics(purple_X, purple_Y, blue_X, blue_Y, angle, contoursPurple.size() > 0, contoursBlue.size() > 0, graffiti);
 
     alphabot.SetPosition((purple_X + blue_X) / 2, (purple_Y + blue_Y) / 2);
     return;
@@ -247,9 +248,12 @@ void Server::choseAction()
 void Server::showResults()
 {
     // Отображаем результаты
-    imshow("Original", frame);
-    imshow("Robot", robotRes);
-    imshow("Graffiti", graffitiRes);
+    if (showGraphics)
+    {
+        imshow("Original", frame);
+        imshow("Robot", robotRes);
+        imshow("Graffiti", graffitiRes);
+    }
 }
 
 Server::Server() {}
@@ -338,6 +342,11 @@ void Server::setDebugMode(bool isDebug)
     }
 }
 
+bool Server::getShowGraphics()
+{
+    return showGraphics;
+}
+
 void Server::setHSV(string color)
 {
     int hMin, sMin, vMin, hMax, sMax, vMax;
@@ -368,4 +377,20 @@ void Server::alphabotRun()
 void Server::setCameraType()
 {
     camera.changeCameraType();
+}
+
+void Server::readSettings()
+{
+    ifstream file("../../docs/config.txt");
+    if (file.is_open())
+    {
+        string ip_temp;
+        getline(file, ip_temp);
+        string showGraphics_str;
+        getline(file, showGraphics_str);
+        if (showGraphics_str == "true")
+            showGraphics = true;
+        else
+            showGraphics = false;
+    }
 }

@@ -9,8 +9,8 @@ bool KeyParser::parseKeys()
 {
     char key = waitKey(1);
 
-    // Если нажат пробел, то переключаем режим отладки
-    if (key == keys.space)
+    // Если нажат пробел и включен режим отображения графики, то переключаем режим отладки
+    if (key == keys.space && server->getShowGraphics())
     {
         debugMode = !debugMode;
         server->setDebugMode(debugMode);

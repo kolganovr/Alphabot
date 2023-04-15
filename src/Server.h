@@ -23,6 +23,7 @@ private:
 
     bool debugMode = false;
     double angle = 0; // Угол поворота робота относительно граффити
+    bool showGraphics = false; // Показывать графику на изображении
 
     // Уставнавливаем нижнюю и верхнюю границу цветов маркера
     // Порядок: красный, зеленый, синий
@@ -81,6 +82,10 @@ public:
     /// @param isDebug - true, если включен режим отладки
     void setDebugMode(bool isDebug);
 
+    /// Возвращает режим отображения графики
+    /// @return true, если графика отображается
+    bool getShowGraphics();
+
     /// Устанавливает границы цветов
     /// @param color - цвет, границы которого нужно установить (purple, blue, green)
     void setHSV(string color);
@@ -90,4 +95,7 @@ public:
 
     // Переключает режим камеры
     void setCameraType();
+
+    // Считывает настройки из файла docs/config.txt
+    void readSettings();
 };

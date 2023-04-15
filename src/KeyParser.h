@@ -12,15 +12,14 @@ private:
     struct keys
     {
         const char space = 32; // Пробел
-        const char one = 49; // 1
-        const char two = 50; // 2
+        const char one = 49;   // 1
+        const char two = 50;   // 2
         const char three = 51; // 3
-        const char s = 115; // s
-        const char l = 108; // l
-        const char esc = 27; // escape
-        const char c = 99; // c
+        const char s = 115;    // s
+        const char l = 108;    // l
+        const char esc = 27;   // escape
+        const char c = 99;     // c
     } keys;
-
 
 public:
     KeyParser(Server *server);

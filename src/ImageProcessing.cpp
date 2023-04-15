@@ -51,11 +51,6 @@ Camera::Camera()
 {
     // Подключаемся к встроенной камере
     connectToWebcam();
-
-    // Создаем окна для отображения исходного кадра и фильтрованного
-    namedWindow("Original", WINDOW_NORMAL);
-    namedWindow("Robot", WINDOW_NORMAL);
-    namedWindow("Graffiti", WINDOW_NORMAL);
 }
 
 Camera::~Camera()

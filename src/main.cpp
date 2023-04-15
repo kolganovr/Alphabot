@@ -1,5 +1,6 @@
 #include <iostream>
-// #include <mosquitto.h>
+#include <conio.h>
+#include <mosquitto.h>
 
 #include "Server.h"
 #include "Alphabot.h"
@@ -12,6 +13,9 @@ int main()
     Server server;
     KeyParser keyParser(&server);
     std::cout << "Started!" << std::endl;
+
+    // Считываем настройки из файла
+    server.readSettings();
 
     while (true)
     {
