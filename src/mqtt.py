@@ -35,14 +35,8 @@ def run():
     # Удаляем 4 последних символа в пути, чтобы получить путь к корню проекта
     absolute_path = absolute_path[:-4]
 
-    mosquittoPath = absolute_path + "/lib/mosquitto/build/src/Debug/mosquitto.exe"
     messagePath = absolute_path + "/docs/message.txt"
-    print("MosquittoPath", mosquittoPath)
     print("MessagePath", messagePath)
-
-    # Запускаем mosquitto
-    os.system("start cmd /c" + mosquittoPath)
-    time.sleep(2)
 
     client = connect_mqtt()
     client.loop_start()
