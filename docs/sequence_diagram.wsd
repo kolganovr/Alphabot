@@ -5,6 +5,7 @@ actor User
 participant main
 participant KeyParser
 participant Server
+participant pythonMQTT
 participant Alphabot
 participant Graffiti
 participant Camera
@@ -14,6 +15,8 @@ participant Cleaner
 
 User -> main: start()
 activate main
+main -> pythonMQTT: start
+activate pythonMQTT
 main -> KeyParser: KeyParser()
 activate KeyParser
 KeyParser -> Server: Server()
@@ -30,10 +33,12 @@ Server -> Camera: Camera()
 activate Camera
 Server -> ThresholdGenerator: ThresholdGenerator()
 activate ThresholdGenerator
+Server -> User: readSettings()
 
-' Если отключен режим отладки
-loop while space is not pressed
+' Цикл
+loop while esc is not pressed
     KeyParser -> Server: receiveMessage()
+    User -> Camera: Image
     Server -> Camera: sendToServer()
     Camera -> Server: Image
 
@@ -45,10 +50,15 @@ loop while space is not pressed
         Server -> Alphabot: setState()
         Server -> Server: choseAction()
         Server -> Alphabot: setState()
+        pythonMQTT -> pythonMQTT: readMessage()
+        pythonMQTT -> Alphabot: publish()
         Alphabot -> EngineController: doAction()
         Alphabot -> Cleaner: doAction()
         Server -> Server: showResult()
-        Server -> User: graphics
+
+        alt not server mode
+            Server -> User: graphics
+        end
     else debug mode
         Server -> ThresholdGenerator: sendImage()
         alt 1, 2, 3 is pressed
@@ -62,8 +72,10 @@ loop while space is not pressed
         end
     end
 
-    ' Если нажата клавиша "space" выходим из цикла
-    alt space is pressed
+    ' Если нажата клавиша "esc" выходим из цикла
+    alt esc is pressed
+        Server -> pythonMQTT: stop()
+        deactivate pythonMQTT
         KeyParser -> Server: ~Server()
         Server -> Alphabot: ~Alphabot()
         Alphabot -> EngineController: ~EngineController()
