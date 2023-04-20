@@ -210,10 +210,17 @@ void Server::searchForRobot()
 
 void Server::choseAction()
 {
-    // Если граффити не найдено или двигатель запущен, то робот ничего не делает
+    // Открываем файл command.txt для записи
+    ofstream file("../../docs/message.txt");
+    // Стираем содержимое файла
+    file.clear();
+
+    // Если граффити не найдено или двигатель не запущен, то робот ничего не делает
     if (!graffiti.isExist() || !alphabot.isEngineStarted())
     {
         alphabot.setState(4); // IDLE
+        // записываем в файл команду IDLE
+        file << "IDLE";
         return;
     }
 
@@ -223,11 +230,13 @@ void Server::choseAction()
         if (angle > 0)
         {
             alphabot.setState(2); // RIGHT
+            file << "right";
             return;
         }
         else
         {
             alphabot.setState(1); // LEFT
+            file << "left";
             return;
         }
     }
@@ -239,14 +248,19 @@ void Server::choseAction()
     if (dist > dDist)
     {
         alphabot.setState(0); // FORWARD
+        file << "forward";
         return;
     }
     // Иначе мы находимся рядом с граффити, и робот начинает его чистить
     else
     {
         alphabot.setState(3); // CLEAN
+        file << "clean";
         return;
     }
+
+    // Закрываем файл
+    file.close();
 }
 
 void Server::showResults()
@@ -281,17 +295,15 @@ void Server::receiveMessage()
 
     // Вычисляем позицию робота
     searchForRobot();
-
+    if (!alphabot.isEngineStarted() && alphabot.getPosX() != -1 && alphabot.getPosY() != -1)
+        alphabot.startEngine();
+    else if (alphabot.isEngineStarted() && (alphabot.getPosX() == -1 || alphabot.getPosY() == -1))
+        alphabot.stopEngine();
     // Сливаем изображения
     mergeFrames();
 
     // Выбираем действие
     choseAction();
-
-    if (!alphabot.isEngineStarted() && alphabot.getPosX() != -1 && alphabot.getPosY() != -1)
-        alphabot.startEngine();
-    else if (alphabot.isEngineStarted() && (alphabot.getPosX() == -1 || alphabot.getPosY() == -1))
-        alphabot.stopEngine();
 
     // Отображаем результаты
     showResults();

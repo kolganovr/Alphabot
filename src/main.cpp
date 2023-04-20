@@ -1,5 +1,4 @@
 #include <iostream>
-#include <mosquitto.h>
 
 #include "Server.h"
 #include "Alphabot.h"
@@ -16,10 +15,15 @@ int main()
     // Считываем настройки из файла
     server.readSettings();
 
+    // запускаем mqtt python
+    system("start cmd /c python ../../src/mqtt.py");
+
     while (true)
     {
         if (!keyParser.parseKeys())
         {
+            ofstream file("../../docs/message.txt");
+            file << "EXIT";
             break;
         }
     }
