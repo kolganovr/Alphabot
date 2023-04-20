@@ -6,7 +6,7 @@ import time
 broker = '127.0.0.1'
 port = 1883
 topic = "cmd"
-# generate client ID with pub prefix randomly
+
 client_id = f'python-mqtt-{random.randint(0, 100)}'
 
 def connect_mqtt() -> mqtt_client:
@@ -30,8 +30,18 @@ def publish(client, msg):
         print(f"Py: Failed to send message to topic {topic}")
 
 def run():
-    # run mosquitto broker in terminal
-    os.system("start cmd /c D:/Coding/CPP/Alphabot/lib/mosquitto/build/src/Debug/mosquitto.exe")
+    absolute_path = os.path.dirname(__file__)
+    absolute_path = absolute_path.replace("\\", "/")
+    # Удаляем 4 последних символа в пути, чтобы получить путь к корню проекта
+    absolute_path = absolute_path[:-4]
+
+    mosquittoPath = absolute_path + "/lib/mosquitto/build/src/Debug/mosquitto.exe"
+    messagePath = absolute_path + "/docs/message.txt"
+    print("MosquittoPath", mosquittoPath)
+    print("MessagePath", messagePath)
+
+    # Запускаем mosquitto
+    os.system("start cmd /c" + mosquittoPath)
     time.sleep(2)
 
     client = connect_mqtt()
@@ -43,7 +53,7 @@ def run():
     prevMessage = "IDLE"
 
     while True:
-        with open("D:/Coding/CPP/Alphabot/docs/message.txt", "r") as f:
+        with open(messagePath, "r") as f:
             message = f.read()
         # если прищло сообщение или пришло сообщение IDLE и предыдущее тоже IDLE
         if message == "" or (message == "IDLE" and prevMessage == "IDLE"):
