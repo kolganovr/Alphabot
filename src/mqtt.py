@@ -3,66 +3,75 @@ from paho.mqtt import client as mqtt_client
 import os
 import time
 
-broker = '127.0.0.1'
-port = 1883
-topic = "cmd"
+# Класс для работы с MQTT
+class MQTTClient:
+    # Конструктор
+    def __init__(self, broker, port, topic):
+        self.broker = broker
+        self.port = port
+        self.topic = topic
+        self.client_id = f'python-mqtt-{random.randint(0, 100)}'
 
-client_id = f'python-mqtt-{random.randint(0, 100)}'
+        os.system("start cmd as admin /c mosquitto -c \"C:\Program Files\mosquitto\mosquitto.conf\" -v")
+        time.sleep(1)
+        absolute_path = os.path.dirname(__file__)
+        absolute_path = absolute_path.replace("\\", "/")
+        # Удаляем 4 последних символа в пути, чтобы получить путь к корню проекта
+        absolute_path = absolute_path[:-4]
 
-def connect_mqtt() -> mqtt_client:
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
+        self.messagePath = absolute_path + "/docs/message.txt"
+        print("MessagePath", self.messagePath)
+
+        self.client = self.connect()
+        self.client.loop_start()
+
+        self.publish("IDLE")        
+    
+    # Подключение к брокеру
+    def connect(self) -> mqtt_client:
+        def on_connect(client, userdata, flags, rc):
+            if rc == 0:
+                print("Connected to MQTT Broker!")
+            else:
+                print("Failed to connect, return code %d\n", rc)
+
+        self.client = mqtt_client.Client(self.client_id)
+        self.client.on_connect = on_connect
+        self.client.connect(self.broker, self.port)
+        return self.client
+
+    # Отправка сообщения
+    def publish(self, msg):
+        result = self.client.publish(self.topic, msg)
+        status = result[0]
+        if status == 0:
+            print(f"Py: Sent `{msg}` to topic `{self.topic}`")
         else:
-            print("Failed to connect, return code %d\n", rc)
+            print(f"Py: Failed to send message to topic {self.topic}")
 
-    client = mqtt_client.Client(client_id)
-    client.on_connect = on_connect
-    client.connect(broker, port)
-    return client
+    # Запуск клиента и проверка наличия сообщений
+    def run(self):
+        message = ""
+        prevMessage = "IDLE"
+        while True:
+            with open(self.messagePath, "r") as f:
+                message = f.read()
+            # если прищло сообщение или пришло сообщение IDLE и предыдущее тоже IDLE
+            if message == "" or (message == "IDLE" and prevMessage == "IDLE"):
+                continue
+            # если пришло сообщение EXIT то выходим из цикла
+            if message == "EXIT":
+                print("EXIT")
+                break
+            # Если полезное сообщение
+            else:
+                self.publish(message) # отправляем его
+                prevMessage = message    # запоминаем его
+                message = ""             # обнуляем текущее сообщение
+                time.sleep(0.1) # немного задержки чтобы не засорять канал
 
-def publish(client, msg):
-    result = client.publish(topic, msg)
-    status = result[0]
-    if status == 0:
-        print(f"Py: Sent `{msg}` to topic `{topic}`")
-    else:
-        print(f"Py: Failed to send message to topic {topic}")
+        self.client.loop_stop()
 
-def run():
-    absolute_path = os.path.dirname(__file__)
-    absolute_path = absolute_path.replace("\\", "/")
-    # Удаляем 4 последних символа в пути, чтобы получить путь к корню проекта
-    absolute_path = absolute_path[:-4]
-
-    messagePath = absolute_path + "/docs/message.txt"
-    print("MessagePath", messagePath)
-
-    client = connect_mqtt()
-    client.loop_start()
-
-    publish(client, "IDLE")
-
-    message = ""
-    prevMessage = "IDLE"
-
-    while True:
-        with open(messagePath, "r") as f:
-            message = f.read()
-        # если прищло сообщение или пришло сообщение IDLE и предыдущее тоже IDLE
-        if message == "" or (message == "IDLE" and prevMessage == "IDLE"):
-            continue
-        # если пришло сообщение EXIT то выходим из цикла
-        if message == "EXIT":
-            break
-        # Если полезное сообщение
-        else:
-            publish(client, message) # отправляем его
-            prevMessage = message    # запоминаем его
-            message = ""             # обнуляем текущее сообщение
-            time.sleep(0.1) # немного задержки чтобы не засорять канал
-            
-    client.loop_stop()
-
-if __name__ == '__main__':    
-    run()
+if __name__ == '__main__':
+    client = MQTTClient('127.0.0.1', 1883, 'cmd')
+    client.run()
