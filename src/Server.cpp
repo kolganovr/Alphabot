@@ -9,7 +9,7 @@ using namespace cv;
 #define MIN_CONTOUR_AREA 200
 #define M_PI 3.1416
 #define dAngle 20
-#define dDist 50
+#define dDist 100
 
 Graffiti Server::searchForGraffiti()
 {
@@ -59,7 +59,7 @@ Graffiti Server::searchForGraffiti()
     return graffiti;
 }
 
-double Server::AlphabotAngleCalc(const int& purple_X, const int& purple_Y, const int& blue_X, const int& blue_Y, const int& target_X, const int& target_Y)
+double Server::AlphabotAngleCalc(const int &purple_X, const int &purple_Y, const int &blue_X, const int &blue_Y, const int &target_X, const int &target_Y)
 {
     // Проеряем условия
     if (purple_X == 0 || purple_Y == 0 || blue_Y == 0 || blue_X == 0)
@@ -87,7 +87,7 @@ double Server::AlphabotAngleCalc(const int& purple_X, const int& purple_Y, const
     return round(-angle_deg * 100) / 100;
 }
 
-void Server::drawGraphics(const int& purple_X, const int& purple_Y, const int& blue_X, const int& blue_Y, const double& angle, bool purpleContour, bool blueContour, Graffiti& graffiti)
+void Server::drawGraphics(const int &purple_X, const int &purple_Y, const int &blue_X, const int &blue_Y, const double &angle, bool purpleContour, bool blueContour, Graffiti &graffiti)
 {
     if (purpleContour)
     {
@@ -215,49 +215,53 @@ void Server::choseAction()
     // Стираем содержимое файла
     file.clear();
 
+    string command = "";
+    string message = "";
+
     // Если граффити не найдено или двигатель не запущен, то робот ничего не делает
     if (!graffiti.isExist() || !alphabot.isEngineStarted())
     {
         alphabot.setState(4); // IDLE
-        // записываем в файл команду IDLE
-        file << "IDLE";
-        return;
+        command = "stop";
     }
-
-    // Если угол больше порогового значения, то поворачиваем робота
-    if (abs(angle) > dAngle)
+    else
     {
-        if (angle > 0)
+        // Если угол больше порогового значения, то поворачиваем робота
+        if (abs(angle) > dAngle)
         {
-            alphabot.setState(2); // RIGHT
-            file << "right";
-            return;
+            if (angle > 0)
+            {
+                alphabot.setState(2); // RIGHT
+                command = "right";
+            }
+            else
+            {
+                alphabot.setState(1); // LEFT
+                command = "left";
+            }
         }
         else
         {
-            alphabot.setState(1); // LEFT
-            file << "left";
-            return;
+            // Вычисляем расстояние до граффити
+            double dist = sqrt(pow(graffiti.getPosX() - alphabot.getPosX(), 2) + pow(graffiti.getPosY() - alphabot.getPosY(), 2));
+
+            // Если расстояние больше порогового значения, то двигаемся к граффити
+            if (dist > dDist)
+            {
+                alphabot.setState(0); // FORWARD
+                command = "forward";
+            }
+            // Иначе мы находимся рядом с граффити, и робот начинает его чистить
+            else
+            {
+                alphabot.setState(3); // CLEAN
+                command = "stop";
+            }
         }
     }
-
-    // Вычисляем расстояние до граффити
-    double dist = sqrt(pow(graffiti.getPosX() - alphabot.getPosX(), 2) + pow(graffiti.getPosY() - alphabot.getPosY(), 2));
-
-    // Если расстояние больше порогового значения, то двигаемся к граффити
-    if (dist > dDist)
-    {
-        alphabot.setState(0); // FORWARD
-        file << "forward";
-        return;
-    }
-    // Иначе мы находимся рядом с граффити, и робот начинает его чистить
-    else
-    {
-        alphabot.setState(3); // CLEAN
-        file << "clean";
-        return;
-    }
+    message = "{\"cmd\" : \""+ command + "\", \"value\": " + "0.1" + ", \"spd\": 1}";
+    // Записываем в файл команду
+    file << message;
 
     // Закрываем файл
     file.close();

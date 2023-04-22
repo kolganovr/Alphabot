@@ -12,15 +12,15 @@ class MQTTClient:
         self.topic = topic
         self.client_id = f'python-mqtt-{random.randint(0, 100)}'
 
-        os.system("start cmd as admin /c mosquitto -c \"C:\Program Files\mosquitto\mosquitto.conf\" -v")
-        time.sleep(1)
         absolute_path = os.path.dirname(__file__)
-        absolute_path = absolute_path.replace("\\", "/")
         # Удаляем 4 последних символа в пути, чтобы получить путь к корню проекта
         absolute_path = absolute_path[:-4]
+        absolute_path = absolute_path.replace("\\", "/")
+        conf_path = absolute_path + "/docs/mosquittoWeb.conf"
+        os.system(f"start cmd as admin /c mosquitto -c \"{conf_path}\" -v")
+        time.sleep(1)
 
         self.messagePath = absolute_path + "/docs/message.txt"
-        print("MessagePath", self.messagePath)
 
         self.client = self.connect()
         self.client.loop_start()
@@ -52,12 +52,13 @@ class MQTTClient:
     # Запуск клиента и проверка наличия сообщений
     def run(self):
         message = ""
-        prevMessage = "IDLE"
+        idleMessage = "{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}"
+        prevMessage = idleMessage
         while True:
             with open(self.messagePath, "r") as f:
                 message = f.read()
             # если прищло сообщение или пришло сообщение IDLE и предыдущее тоже IDLE
-            if message == "" or (message == "IDLE" and prevMessage == "IDLE"):
+            if message == "" or (message == idleMessage and prevMessage == idleMessage):
                 continue
             # если пришло сообщение EXIT то выходим из цикла
             if message == "EXIT":
@@ -73,5 +74,5 @@ class MQTTClient:
         self.client.loop_stop()
 
 if __name__ == '__main__':
-    client = MQTTClient('127.0.0.1', 1883, 'cmd')
+    client = MQTTClient('192.168.1.5', 1883, 'abot/command/alex')
     client.run()
