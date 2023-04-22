@@ -25,7 +25,7 @@ class MQTTClient:
         self.client = self.connect()
         self.client.loop_start()
 
-        self.publish("IDLE")        
+        self.publish("{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}")        
     
     # Подключение к брокеру
     def connect(self) -> mqtt_client:
@@ -52,13 +52,12 @@ class MQTTClient:
     # Запуск клиента и проверка наличия сообщений
     def run(self):
         message = ""
-        idleMessage = "{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}"
-        prevMessage = idleMessage
+        prevMessage = "{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}"
         while True:
             with open(self.messagePath, "r") as f:
                 message = f.read()
             # если прищло сообщение или пришло сообщение IDLE и предыдущее тоже IDLE
-            if message == "" or (message == idleMessage and prevMessage == idleMessage):
+            if message == "" or (message.find("stop") != -1 and prevMessage.find("stop") != -1):
                 continue
             # если пришло сообщение EXIT то выходим из цикла
             if message == "EXIT":
