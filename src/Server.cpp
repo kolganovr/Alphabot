@@ -9,7 +9,6 @@ using namespace cv;
 #define MIN_CONTOUR_AREA 200
 #define M_PI 3.1416
 #define dAngle 20
-#define dDist 100
 
 Graffiti Server::searchForGraffiti()
 {
@@ -112,6 +111,9 @@ void Server::drawGraphics(const int &purple_X, const int &purple_Y, const int &b
         // Рисуем линию, соединяющую центр робота и центр граффити
         line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
 
+        // Рисуем обводку круга в центре робота размером dDist
+        circle(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), dDist, Scalar(255, 255, 255), 1);
+
         // Пишем текст с углом поворота
         putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
     }
@@ -200,6 +202,9 @@ void Server::searchForRobot()
         angle = AlphabotAngleCalc(purple_X, purple_Y, blue_X, blue_Y, graffiti.getPosX(), graffiti.getPosY());
     }
 
+    // Устанавливаем расстояние когда робот остновится от граффити как растояние между маркерами /2 + 50%
+    dDist = static_cast<int>(sqrt(pow(purple_X - blue_X, 2) + pow(purple_Y - blue_Y, 2)) / 2 * 1.5);
+
     // Рисуем графику, если нужно
     if (showGraphics)
         drawGraphics(purple_X, purple_Y, blue_X, blue_Y, angle, contoursPurple.size() > 0, contoursBlue.size() > 0, graffiti);
@@ -226,40 +231,38 @@ void Server::choseAction()
     }
     else
     {
-        // Если угол больше порогового значения, то поворачиваем робота
-        if (abs(angle) > dAngle)
+        // Вычисляем расстояние до граффити
+        double dist = sqrt(pow(graffiti.getPosX() - alphabot.getPosX(), 2) + pow(graffiti.getPosY() - alphabot.getPosY(), 2));
+        if (dist < dDist)
         {
-            if (angle > 0)
-            {
-                alphabot.setState(2); // RIGHT
-                command = "right";
-            }
-            else
-            {
-                alphabot.setState(1); // LEFT
-                command = "left";
-            }
+            alphabot.setState(3); // CLEAN
+            command = "stop";
         }
         else
         {
-            // Вычисляем расстояние до граффити
-            double dist = sqrt(pow(graffiti.getPosX() - alphabot.getPosX(), 2) + pow(graffiti.getPosY() - alphabot.getPosY(), 2));
-
+            // Если угол больше порогового значения, то поворачиваем робота
+            if (abs(angle) > dAngle)
+            {
+                if (angle > 0)
+                {
+                    alphabot.setState(2); // RIGHT
+                    command = "right";
+                }
+                else
+                {
+                    alphabot.setState(1); // LEFT
+                    command = "left";
+                }
+            }
             // Если расстояние больше порогового значения, то двигаемся к граффити
-            if (dist > dDist)
+            else if (dist > dDist)
             {
                 alphabot.setState(0); // FORWARD
                 command = "forward";
             }
-            // Иначе мы находимся рядом с граффити, и робот начинает его чистить
-            else
-            {
-                alphabot.setState(3); // CLEAN
-                command = "stop";
-            }
         }
     }
-    message = "{\"cmd\" : \""+ command + "\", \"value\": " + "0.1" + ", \"spd\": 1}";
+    message = "{\"cmd\" : \"" + command + "\", \"value\": " + "0.1" + ", \"spd\": 1}";
     // Записываем в файл команду
     file << message;
 
