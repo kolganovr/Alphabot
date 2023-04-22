@@ -59,7 +59,7 @@ Graffiti Server::searchForGraffiti()
     return graffiti;
 }
 
-double Server::AlphabotAngleCalc(int purple_X, int purple_Y, int blue_X, int blue_Y, int target_X, int target_Y)
+double Server::AlphabotAngleCalc(const int& purple_X, const int& purple_Y, const int& blue_X, const int& blue_Y, const int& target_X, const int& target_Y)
 {
     // Проеряем условия
     if (purple_X == 0 || purple_Y == 0 || blue_Y == 0 || blue_X == 0)
@@ -87,7 +87,7 @@ double Server::AlphabotAngleCalc(int purple_X, int purple_Y, int blue_X, int blu
     return round(-angle_deg * 100) / 100;
 }
 
-void Server::drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, double angle, bool purpleContour, bool blueContour, Graffiti graffiti)
+void Server::drawGraphics(const int& purple_X, const int& purple_Y, const int& blue_X, const int& blue_Y, const double& angle, bool purpleContour, bool blueContour, Graffiti& graffiti)
 {
     if (purpleContour)
     {
@@ -113,7 +113,7 @@ void Server::drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, do
         line(robotRes, Point(alphabot.getPosX(), alphabot.getPosY()), Point(graffiti.getPosX(), graffiti.getPosY()), Scalar(255, 255, 255), 1);
 
         // Пишем текст с углом поворота
-        // putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+        putText(robotRes, to_string(angle), Point(alphabot.getPosX(), alphabot.getPosY()), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
     }
 }
 

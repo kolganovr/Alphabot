@@ -65,7 +65,7 @@ private:
     vector<int> upperHSV = {179, 255, 255};
 
     /// Функция для получения значений маски из файла
-    /// @return два вектора значений маски сначала для нижней границы, потом для верхней границы 
+    /// @return два вектора значений маски сначала для нижней границы, потом для верхней границы
     /// (hMin, sMin, vMin, hMax, sMax, vMax) в порядке: красный, зеленый, синий
     vector<vector<Scalar>> getHSVfromFile();
 
@@ -78,7 +78,7 @@ public:
     /// Функция для сохранений значений маски в файл
     /// @param lowerHSV вектор значений нижней границы маски для каждого цвета (hMin, sMin, vMin) в порядке: красный, зеленый, синий
     /// @param upperHSV вектор значений верхней границы маски для каждого цвета (hMax, sMax, vMax) в порядке: красный, зеленый, синий
-    void saveHSVtoFile(vector<Scalar> lowerHSV, vector<Scalar> upperHSV);
+    void saveHSVtoFile(vector<Scalar> &lowerHSV, vector<Scalar> &upperHSV);
 
     /// Функция для получения изображения с камеры
     void recieveImage(const Mat &hsv, const Mat &frame);

@@ -131,7 +131,7 @@ void ThresholdGenerator::trackBar()
     createTrackbar("Val Max", "Threshold", &upperHSV[2], 255);
 }
 
-void ThresholdGenerator::saveHSVtoFile(vector<Scalar> lowerHSV, vector<Scalar> upperHSV)
+void ThresholdGenerator::saveHSVtoFile(vector<Scalar> &lowerHSV, vector<Scalar> &upperHSV)
 {
     ofstream file;
     file.open("../../docs/hsvValues.txt");

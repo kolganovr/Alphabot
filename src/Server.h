@@ -22,7 +22,7 @@ private:
     Mat graffitiRes;
 
     bool debugMode = false;
-    double angle = 0; // Угол поворота робота относительно граффити
+    double angle = 0;          // Угол поворота робота относительно граффити
     bool showGraphics = false; // Показывать графику на изображении
 
     // Уставнавливаем нижнюю границу цветов маркера
@@ -38,7 +38,7 @@ private:
     /// @param blue_X X координата синей точки
     /// @param blue_Y Y координата синей точки
     /// @return угол наклона в градусах
-    double AlphabotAngleCalc(int purple_X, int purple_Y, int blue_X, int blue_Y, int target_X, int target_Y);
+    double AlphabotAngleCalc(const int &purple_X, const int &purple_Y, const int &blue_X, const int &blue_Y, const int &target_X, const int &target_Y);
 
     /// Ристует графику поверх изображения
     /// @param blue_X X позиция синего маркера
@@ -48,11 +48,12 @@ private:
     /// @param angle угол
     /// @param purpleContour фиолетовый маркер найден
     /// @param blueContour синий маркер найден
-    void drawGraphics(int purple_X, int purple_Y, int blue_X, int blue_Y, double angle, bool purpleContour, bool blueContour, Graffiti graffiti);
-    
+    /// @param graffiti граффити
+    void drawGraphics(const int &purple_X, const int &purple_Y, const int &blue_X, const int &blue_Y, const double &angle, bool purpleContour, bool blueContour, Graffiti &graffiti);
+
     // Поиск граффити на изображении
     Graffiti searchForGraffiti();
-    
+
     // Ищет позцию робота на кадре и устанавливает его позицию
     void searchForRobot();
 
