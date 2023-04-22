@@ -16,6 +16,8 @@ Python: `2.7.9+` или `3.6+`
 ```bash
 pip install paho-mqtt
 ```
+
+Также необходимо установить `mosquitto` для работы с протоколом MQTT. Для этого воспользуйтесь иструкцией на сайте [mosquitto](https://mosquitto.org/download/). Установка должна производиться по пути `C:\Program Files\mosquitto`.
 ## Запуск программы
 Для запуска программы необходимо собрать и запустить файл `main.cpp` в корневой директории проекта.
 
@@ -49,12 +51,12 @@ pip install paho-mqtt
 ![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/docs/KTC.png)
 
 ## Class diagram
-![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/main/plantUML.wsd#1)
+![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/plantUML.wsd#1)
 
 ## Sequence diagram
 Примерная диаграмма работы программы
 
-![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/sequence_diagram.wsd)
+![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/sequence_diagram.wsd#1)
 
 ## Status diagram
 Диаграмма состояний для Альфабота. Состояния изменяются в методе Server::chooseAction()

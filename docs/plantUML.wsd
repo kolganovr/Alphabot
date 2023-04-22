@@ -20,10 +20,17 @@ class Cleaner {
 
 class Camera {
     - cap: VideoCapture
+    - isWebcam: bool
+    - IP_CAM: string
     - getImage(): tuple<Mat, Mat>
+    - connectToWebcam(): void
+    - connectToIPcam(): void
     + Camera()
     + ~Camera()
     + sendToServer(): tuple<Mat, Mat>
+    + changeCameraType()
+    + setIPcam(ip: string)
+    + getCameraType(): bool
 }
 
 class Graffiti {
@@ -65,7 +72,7 @@ class ThresholdGenerator {
     - getHSVfromFile(): vector<vector<Scalar>>
     + ThresholdGenerator()
     + trackBar(): void
-    + saveHSVtoFile(lowerHSV: vector<Scalar>, upperHSV: vector<Scalar>): void
+    + saveHSVtoFile(lowerHSV: vector<Scalar>&, upperHSV: vector<Scalar>&): void
     + recieveImage(hsv: const Mat&, frame: const Mat&): void
     + sendHSVtoServer(): vector<vector<Scalar>>
     + getHSV(): tuple<int, int, int, int, int, int>
@@ -82,22 +89,29 @@ class Server {
 - graffitiRes: Mat
 - debugMode: bool
 - angle: double
+- showGraphics: bool
 - lowerHSV: vector<Scalar>
 - upperHSV: vector<Scalar>
-- searchForGraffiti(): tuple<int, int>
-- AlphabotAngleCalc(purple_X: int, purple_Y: int, blue_X: int, blue_Y: int, target_X: int, target_Y: int): double
-- drawGraphics(blue_X: int, blue_Y: int, purple_X: int, purple_Y: int, angle: double, purpleContour: bool, blueContour: bool, graffiti: Graffiti)
-- searchForRobot(graffiti: Graffiti)
+- AlphabotAngleCalc(purple_X: const int&, purple_Y: const int&, blue_X: const int&, 
+blue_Y: const int&, target_X: const int&, target_Y:const int&): double
+- drawGraphics(blue_X: const int&, blue_Y: const int&, purple_X: const int&, purple_Y: const int&, 
+angle: const double&, purpleContour: bool, blueContour: bool, graffiti: Graffiti&)
+- searchForGraffiti(): Graffiti
+- searchForRobot()
 - choseAction()
 - showResults()
+- mergeFrames()
 + Server()
 + receiveMessage()
 + sendImageToThresholdGenerator()
 + sendHSVToThresholdGenerator()
 + recieveHSVFromThresholdGenerator()
 + setDebugMode(isDebug: bool)
++ getShowGraphics(): bool
 + setHSV(color: string)
 + alphabotRun()
++ setCameraType()
++ readSettings()
 }
 
 class KeyParser {
@@ -106,6 +120,20 @@ class KeyParser {
     -keys : struct
     +KeyParser(server: Server*)
     +parseKeys() : bool
+}
+
+class MQTTClientPython {
+    + broker
+    + port
+    + topic
+    + client_id
+    + client
+    + messagePath
+    + __init__(self, broker, port, topic)
+    + on_connect(client, userdata, flags, rc)
+    + connect(self) -> mqtt_client
+    + publish(self, msg)
+    + run()
 }
 
 EngineController --* Alphabot
@@ -118,4 +146,5 @@ Server *- ThresholdGenerator
 Camera -* Server
 Alphabot --* Server
 Server --* KeyParser
+MQTTClientPython ..> Server
 @enduml
