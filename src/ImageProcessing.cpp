@@ -129,6 +129,7 @@ void ThresholdGenerator::trackBar()
     createTrackbar("Sat Max", "Threshold", &upperHSV[1], 255);
     createTrackbar("Val Min", "Threshold", &lowerHSV[2], 255);
     createTrackbar("Val Max", "Threshold", &upperHSV[2], 255);
+    createTrackbar("Time For Command", "Threshold", &commandTime, 10);
 }
 
 void ThresholdGenerator::saveHSVtoFile(vector<Scalar> &lowerHSV, vector<Scalar> &upperHSV)
@@ -205,4 +206,11 @@ vector<vector<Scalar>> ThresholdGenerator::sendHSVtoServer()
 tuple<int, int, int, int, int, int> ThresholdGenerator::getHSV()
 {
     return make_tuple(lowerHSV[0], lowerHSV[1], lowerHSV[2], upperHSV[0], upperHSV[1], upperHSV[2]);
+}
+
+string ThresholdGenerator::getCommandTime()
+{
+    if (commandTime == 10)
+        return "1";
+    return "0." + to_string(commandTime);
 }

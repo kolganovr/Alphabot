@@ -262,7 +262,7 @@ void Server::choseAction()
             }
         }
     }
-    message = "{\"cmd\" : \"" + command + "\", \"value\": " + "0.1" + ", \"spd\": 1}";
+    message = "{\"cmd\" : \"" + command + "\", \"value\": " + commandTime + ", \"spd\": 1}";
     // Записываем в файл команду
     file << message;
 
@@ -354,6 +354,8 @@ void Server::setDebugMode(bool isDebug)
     {
         namedWindow("Original", WINDOW_NORMAL);
         namedWindow("Robot", WINDOW_NORMAL);
+
+        commandTime = thresholdGenerator.getCommandTime();
 
         destroyWindow("Threshold");
         destroyWindow("Mask");

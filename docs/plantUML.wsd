@@ -69,6 +69,7 @@ class ThresholdGenerator {
     - frame: Mat
     - lowerHSV: vector<int>
     - upperHSV: vector<int>
+    - commandTime: int
     - getHSVfromFile(): vector<vector<Scalar>>
     + ThresholdGenerator()
     + trackBar(): void
@@ -76,6 +77,7 @@ class ThresholdGenerator {
     + recieveImage(hsv: const Mat&, frame: const Mat&): void
     + sendHSVtoServer(): vector<vector<Scalar>>
     + getHSV(): tuple<int, int, int, int, int, int>
+    + getCommandTime(): string
 }
 
 class Server {
@@ -90,6 +92,8 @@ class Server {
 - debugMode: bool
 - angle: double
 - showGraphics: bool
+- dDist: int
+- commandTime: string
 - lowerHSV: vector<Scalar>
 - upperHSV: vector<Scalar>
 - AlphabotAngleCalc(purple_X: const int&, purple_Y: const int&, blue_X: const int&, 
