@@ -2,6 +2,7 @@ import random
 from paho.mqtt import client as mqtt_client
 import os
 import time
+import socket
 
 # Класс для работы с MQTT
 class MQTTClient:
@@ -17,6 +18,15 @@ class MQTTClient:
         absolute_path = absolute_path[:-4]
         absolute_path = absolute_path.replace("\\", "/")
         conf_path = absolute_path + "/docs/mosquittoWeb.conf"
+        # Открываем файл конфигурации. Если не существует, то создаем его
+        with open(conf_path, "a+") as f:
+            pass
+        # Вписываем listener 1883 {ip}\n allow_anonymous true
+        conf = "listener 1883 " + ip + "\n" + "allow_anonymous true"
+        # Записываем изменения в файл конфигурации
+        with open(conf_path, "w") as f:
+            f.write(conf)
+
         os.system(f"start cmd as admin /c mosquitto -c \"{conf_path}\" -v")
         time.sleep(1)
 
@@ -73,5 +83,8 @@ class MQTTClient:
         self.client.loop_stop()
 
 if __name__ == '__main__':
-    client = MQTTClient('192.168.1.5', 1883, 'abot/command/alex')
+    # получаем IP-адресс компьютера
+    ip = socket.gethostbyname(socket.gethostname())
+    print("IP: " + ip)
+    client = MQTTClient(ip, 1883, 'abot/command/alex')
     client.run()
