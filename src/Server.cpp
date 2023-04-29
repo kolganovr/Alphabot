@@ -202,8 +202,8 @@ void Server::searchForRobot()
         angle = AlphabotAngleCalc(purple_X, purple_Y, blue_X, blue_Y, graffiti.getPosX(), graffiti.getPosY());
     }
 
-    // Устанавливаем расстояние когда робот остновится от граффити как растояние между маркерами /2 + 50%
-    dDist = static_cast<int>(sqrt(pow(purple_X - blue_X, 2) + pow(purple_Y - blue_Y, 2)) / 2 * 1.5);
+    // Устанавливаем расстояние когда робот остновится от граффити как растояние между маркерами
+    dDist = static_cast<int>(sqrt(pow(purple_X - blue_X, 2) + pow(purple_Y - blue_Y, 2)));
 
     // Рисуем графику, если нужно
     if (showGraphics)
