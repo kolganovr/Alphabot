@@ -216,7 +216,7 @@ void Server::searchForRobot()
 void Server::choseAction()
 {
     // Открываем файл command.txt для записи
-    ofstream file("../../docs/message.txt");
+    ofstream file("../../.temp/message.txt");
     // Стираем содержимое файла
     file.clear();
 
@@ -402,16 +402,22 @@ void Server::setCameraType()
 
 void Server::readSettings()
 {
-    ifstream file("../../docs/config.txt");
+    ifstream file("../../.temp/config.txt");
     if (file.is_open())
     {
         string ip_temp;
         getline(file, ip_temp);
         string showGraphics_str;
         getline(file, showGraphics_str);
-        if (showGraphics_str == "true")
+        if (showGraphics_str == "True")
             showGraphics = true;
         else
             showGraphics = false;
+    }
+    else
+    {
+        cout << "Error: can't find config file" << endl;
+        showGraphics = true;
+        cout << "Show graphics: " << showGraphics << endl;
     }
 }

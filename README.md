@@ -23,9 +23,9 @@ pip install paho-mqtt
 
 Для связи с альфабото необходимо **отключить брэндмауэр** на компьютере, на котором запускается программа.
 ## Запуск программы
-В папке `/docs` в корневой директории проекта находится файл `config.txt`. В этом файле необходимо указать:
+В папке `/Settings` в корневой директории проекта находится файл `config.json`. В этом файле необходимо указать:
 1. IP-адрес внещней камеры
-2. Режим вывода изображения (`true` - выводить изображение с камеры, `false` - не выводить)
+2. Режим вывода изображения (`true` - выводить изображение с камеры и результаты поиска, `false` - не выводить)
 
 Для запуска программы необходимо собрать и запустить файл `main.cpp` в корневой директории проекта.
 ## Во время работы программы
@@ -39,7 +39,7 @@ pip install paho-mqtt
 
 В последней строчке можно задать время выполнения роботом каждой команды (0-10), где 10 - 1 секунда. Значение по умолчанию - 1 (0.1 секунды)
 
-После применения изменений порогов, можно нажать `space` для проверки результатов. Если результаты удовлетворительны, то можно сохранить пороги в файл с помощью кнопки `s`, находясь в режиме установки порогов. Текстовый файл с настройками будет сохранён в папке `/docs` в проекте с именем `hsvValues.txt`.
+После применения изменений порогов, можно нажать `space` для проверки результатов. Если результаты удовлетворительны, то можно сохранить пороги в файл с помощью кнопки `s`, находясь в режиме установки порогов. JSON файл с настройками будет сохранён в папке `/Settings` в проекте с именем `hsvValues.json`.
 
 Если такой файл уже создан и в нём уже есть настройки, то, находясь в режиме установки порогов, можно загрузить настройки из файла с помощью кнопки `L`.
 
@@ -56,12 +56,12 @@ pip install paho-mqtt
 ![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/docs/KTC.png)
 
 ## Class diagram
-![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/plantUML.wsd#1)
+![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/plantUML.wsd#2)
 
 ## Sequence diagram
 Примерная диаграмма работы программы
 
-![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/sequence_diagram.wsd#1)
+![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/sequence_diagram.wsd#2)
 
 ## Status diagram
 Диаграмма состояний для Альфабота. Состояния изменяются в методе Server::chooseAction()

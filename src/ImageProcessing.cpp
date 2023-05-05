@@ -77,7 +77,7 @@ void Camera::changeCameraType()
     else
     {
         // Считываем IP адрес внешней камеры из файла config.txt в папке /docs
-        ifstream file("../../docs/config.txt");
+        ifstream file("../../.temp/config.txt");
         if (file.is_open())
         {
             getline(file, IP_CAM);
@@ -135,7 +135,7 @@ void ThresholdGenerator::trackBar()
 void ThresholdGenerator::saveHSVtoFile(vector<Scalar> &lowerHSV, vector<Scalar> &upperHSV)
 {
     ofstream file;
-    file.open("../../docs/hsvValues.txt");
+    file.open("../../.temp/hsvValues.txt");
 
     if (!file.is_open())
     {
@@ -151,12 +151,15 @@ void ThresholdGenerator::saveHSVtoFile(vector<Scalar> &lowerHSV, vector<Scalar> 
     }
     cout << "HSV values saved to file" << endl;
     file.close();
+
+    // Запускаем скрипт для преобразования в json
+    system("python ../../src/hsvSaver.py");
 }
 
 vector<vector<Scalar>> ThresholdGenerator::getHSVfromFile()
 {
     ifstream file;
-    file.open("../../docs/hsvValues.txt");
+    file.open("../../.temp/hsvValues.txt");
 
     if (!file.is_open())
     {

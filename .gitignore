@@ -13,3 +13,5 @@ _deps
 .cmake
 build/
 *.txt
+.temp/
+*.conf

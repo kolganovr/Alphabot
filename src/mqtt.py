@@ -30,7 +30,7 @@ class MQTTClient:
         os.system(f"start cmd as admin /c mosquitto -c \"{conf_path}\" -v")
         time.sleep(1)
 
-        self.messagePath = absolute_path + "/docs/message.txt"
+        self.messagePath = absolute_path + "/.temp/message.txt"
 
         self.client = self.connect()
         self.client.loop_start()
@@ -64,8 +64,14 @@ class MQTTClient:
         message = ""
         prevMessage = "{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}"
         while True:
-            with open(self.messagePath, "r") as f:
-                message = f.read()
+            # Пробуем открыть файл с сообщением если его нет, то создаем его
+            try:
+                with open(self.messagePath, "r") as f:
+                    message = f.read()
+            except:
+                with open(self.messagePath, "w") as f:
+                    f.write("")
+                continue
             # если прищло сообщение или пришло сообщение IDLE и предыдущее тоже IDLE
             if message == "" or (message.find("stop") != -1 and prevMessage.find("stop") != -1):
                 continue
