@@ -16,9 +16,12 @@ private:
         const char two = 50;   // 2
         const char three = 51; // 3
         const char s = 115;    // s
+        const char s_ru = -5;  // ы
         const char l = 108;    // l
+        const int l_ru = -28;  // д
         const char esc = 27;   // escape
         const char c = 99;     // c
+        const int c_ru = -15;  // с
     } keys;
 
 public:

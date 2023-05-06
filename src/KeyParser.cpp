@@ -17,7 +17,7 @@ bool KeyParser::parseKeys()
         cout << "Debug mode: " << debugMode << endl;
     }
 
-    if (key == keys.c)
+    if (key == keys.c || key == keys.c_ru)
     {
         server->setCameraType();
     }
@@ -41,11 +41,11 @@ bool KeyParser::parseKeys()
         {
             server->setHSV("blue");
         }
-        else if (key == keys.s)
+        else if (key == keys.s || key == keys.s_ru)
         {
             server->sendHSVToThresholdGenerator();
         }
-        else if (key == keys.l)
+        else if (key == keys.l || key == keys.l_ru)
         {
             server->recieveHSVFromThresholdGenerator();
         }
