@@ -262,7 +262,10 @@ void Server::choseAction()
             }
         }
     }
-    message = "{\"cmd\" : \"" + command + "\", \"value\": " + commandTime + ", \"spd\": 1}";
+    if (command == "stop")
+        message = "{\"cmd\" : \"" + command + "\"}";
+    else
+        message = "{\"cmd\" : \"" + command + "\", \"value\": " + commandTime + ", \"spd\": 1}";
     // Записываем в файл команду
     file << message;
 

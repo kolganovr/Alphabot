@@ -35,7 +35,7 @@ class MQTTClient:
         self.client = self.connect()
         self.client.loop_start()
 
-        self.publish("{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}")        
+        self.publish("{\"cmd\" : \"stop\"}")        
     
     # Подключение к брокеру
     def connect(self) -> mqtt_client:
@@ -62,7 +62,7 @@ class MQTTClient:
     # Запуск клиента и проверка наличия сообщений
     def run(self):
         message = ""
-        prevMessage = "{\"cmd\" : \"stop\", \"value\": 0.1, \"spd\": 1}"
+        prevMessage = "{\"cmd\" : \"stop\"}"
         while True:
             # Пробуем открыть файл с сообщением если его нет, то создаем его
             try:
