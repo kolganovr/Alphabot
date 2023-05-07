@@ -126,18 +126,17 @@ class KeyParser {
     +parseKeys() : bool
 }
 
-class MQTTClientPython {
-    + broker
-    + port
-    + topic
-    + client_id
-    + client
-    + messagePath
-    + __init__(self, broker, port, topic)
-    + on_connect(client, userdata, flags, rc)
-    + connect(self) -> mqtt_client
-    + publish(self, msg)
-    + run()
+class Mqtt {
+- brokerIP: string
+- topic: string
+- prevMessage: string
+- pathToConfig: string
+- makeCommand(message: string, time: string): string
+- findPathToConfig(): void
++ Mqtt()
++ getPathToConfig(): string
++ setupBroker(brokerIP: string, topic: string): void
++ publish(command: string, time: string): void
 }
 
 EngineController --* Alphabot
@@ -150,5 +149,5 @@ Server *- ThresholdGenerator
 Camera -* Server
 Alphabot --* Server
 Server --* KeyParser
-MQTTClientPython ..> Server
+Mqtt --> Server
 @enduml

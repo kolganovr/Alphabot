@@ -49,19 +49,19 @@ pip install paho-mqtt
 
 1. `Camera` получает изображение и передает его `Server`
 2. `Server` обрабатывает изображение и ищет на нем граффити и робота. Если найдены, то `Server` высчитывает, какое действие необходимо совершить роботу, чтобы приблизиться к граффити.
-3. `Server` передает действие `Alphabot` по протоколу MQTT используя вспомогательный код на Python.
+3. `Server` передает действие `Alphabot` по протоколу MQTT
 4. `Alphabot` с помощью одного из классов `EngineController` или `Cleaner` выполняет поставленное действие.
 
 ## Схема КТС
 ![Схема КТС](https://github.com/kolganovr/Alphabot/raw/main/docs/KTC.png)
 
 ## Class diagram
-![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/plantUML.wsd#2)
+![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/plantUML.wsd#3)
 
 ## Sequence diagram
 Примерная диаграмма работы программы
 
-![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/sequence_diagram.wsd#2)
+![Sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/kolganovr/Alphabot/dev/docs/sequence_diagram.wsd#3)
 
 ## Status diagram
 Диаграмма состояний для Альфабота. Состояния изменяются в методе Server::chooseAction()

@@ -7,6 +7,7 @@
 #include "Alphabot.h"
 #include "ImageProcessing.h"
 #include "Graffiti.h"
+#include "Mqtt.h"
 
 // Класс сервера для коммуникации между камерой и роботом а также вычислений
 class Server
@@ -16,6 +17,7 @@ private:
     Graffiti graffiti;
     Camera camera;
     ThresholdGenerator thresholdGenerator;
+    Mqtt mqtt;
     Mat frame;
     Mat hsv;
     Mat robotRes;
@@ -26,6 +28,7 @@ private:
     bool showGraphics = false;  // Показывать графику на изображении
     int dDist = 50;             // Расстояние на котором робот остановится от граффити
     string commandTime = "0.1"; // Время выполнения команды
+    string brokerIp = "";       // IP брокера
 
     // Уставнавливаем нижнюю границу цветов маркера
     // Порядок: красный, зеленый, синий
@@ -103,4 +106,8 @@ public:
 
     // Считывает настройки из файла docs/config.txt
     void readSettings();
+
+    /// Возвращает путь к файлу конфигурации mosquitto
+    /// @return путь к файлу конфигурации mosquitto
+    string getConfPath();
 };

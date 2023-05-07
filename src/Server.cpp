@@ -2,6 +2,7 @@
 #include "Alphabot.h"
 #include "Graffiti.h"
 #include "ImageProcessing.h"
+#include "Mqtt.h"
 
 using namespace std;
 using namespace cv;
@@ -215,13 +216,7 @@ void Server::searchForRobot()
 
 void Server::choseAction()
 {
-    // Открываем файл command.txt для записи
-    ofstream file("../../.temp/message.txt");
-    // Стираем содержимое файла
-    file.clear();
-
     string command = "";
-    string message = "";
 
     // Если граффити не найдено или двигатель не запущен, то робот ничего не делает
     if (!graffiti.isExist() || !alphabot.isEngineStarted())
@@ -262,15 +257,9 @@ void Server::choseAction()
             }
         }
     }
-    if (command == "stop")
-        message = "{\"cmd\" : \"" + command + "\"}";
-    else
-        message = "{\"cmd\" : \"" + command + "\", \"value\": " + commandTime + ", \"spd\": 1}";
-    // Записываем в файл команду
-    file << message;
 
-    // Закрываем файл
-    file.close();
+    // Отправляем команду роботу
+    mqtt.publish(command, commandTime);
 }
 
 void Server::showResults()
@@ -408,14 +397,17 @@ void Server::readSettings()
     ifstream file("../../.temp/config.txt");
     if (file.is_open())
     {
-        string ip_temp;
-        getline(file, ip_temp);
+        string webcam_ip_temp;
+        getline(file, webcam_ip_temp);
         string showGraphics_str;
         getline(file, showGraphics_str);
         if (showGraphics_str == "True")
             showGraphics = true;
         else
             showGraphics = false;
+        cout << "Show graphics: " << showGraphics << endl;
+        getline(file, brokerIp);
+        cout << "Broker IP: " << brokerIp << endl;
     }
     else
     {
@@ -423,4 +415,11 @@ void Server::readSettings()
         showGraphics = true;
         cout << "Show graphics: " << showGraphics << endl;
     }
+
+    mqtt.setupBroker(brokerIp, "abot/command/alex");
+}
+
+string Server::getConfPath()
+{
+    return mqtt.getPathToConfig();
 }

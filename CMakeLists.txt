@@ -16,6 +16,8 @@ add_executable(Alphabot
     src/Server.h
     src/KeyParser.cpp
     src/KeyParser.h
+    src/Mqtt.cpp
+    src/Mqtt.h
 )
 
 include_directories(${MOSQUITTO_LIB_PATH})

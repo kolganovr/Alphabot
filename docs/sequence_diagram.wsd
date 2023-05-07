@@ -5,7 +5,7 @@ actor User
 participant main
 participant KeyParser
 participant Server
-participant pythonMQTT
+participant Mqtt
 participant Alphabot
 participant Graffiti
 participant Camera
@@ -15,12 +15,12 @@ participant Cleaner
 
 User -> main: start()
 activate main
-main -> pythonMQTT: start
-activate pythonMQTT
 main -> KeyParser: KeyParser()
 activate KeyParser
 KeyParser -> Server: Server()
 activate Server
+Server -> Mqtt: Mqtt()
+activate Mqtt
 Server -> Alphabot: Alphabot()
 activate Alphabot
 Alphabot -> EngineController: EngineController()
@@ -34,6 +34,7 @@ activate Camera
 Server -> ThresholdGenerator: ThresholdGenerator()
 activate ThresholdGenerator
 Server -> User: readSettings()
+Server -> Mqtt: setupBroker()
 
 ' Цикл
 loop while esc is not pressed
@@ -50,8 +51,7 @@ loop while esc is not pressed
         Server -> Alphabot: setState()
         Server -> Server: choseAction()
         Server -> Alphabot: setState()
-        pythonMQTT -> pythonMQTT: readMessage()
-        pythonMQTT -> Alphabot: publish()
+        Server -> Mqtt: publish()
         Alphabot -> EngineController: doAction()
         Alphabot -> Cleaner: doAction()
         Server -> Server: showResult()
@@ -74,8 +74,8 @@ loop while esc is not pressed
 
     ' Если нажата клавиша "esc" выходим из цикла
     alt esc is pressed
-        Server -> pythonMQTT: stop()
-        deactivate pythonMQTT
+        Server -> Mqtt: ~Mqtt()
+        deactivate Mqtt
         KeyParser -> Server: ~Server()
         Server -> Alphabot: ~Alphabot()
         Alphabot -> EngineController: ~EngineController()
