@@ -1,6 +1,6 @@
 import json
 import os
-
+import socket
 # Получаем абсолютный путь к файлу settings.py
 absolute_path = os.path.dirname(__file__)
 
@@ -24,13 +24,15 @@ with open(confJSON_path, 'r') as f:
     # Загружаем данные JSON
     data = json.load(f)
 
+
 # Открываем выходной текстовый файл
 with open(configTXT_path, 'w') as f:
     # Проходим по каждому свойству в данных JSON
     for key in data:
         # Записываем значение свойства в текстовый файл
         f.write(str(data[key]) + '\n')
-
+    ip = socket.gethostbyname(socket.gethostname())
+    f.write(ip)
 # Открываем входной JSON файл с настройками HSV
 with open(hsvValuesJSON_path, 'r') as f:
     # Загружаем данные JSON
