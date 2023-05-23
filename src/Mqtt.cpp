@@ -18,7 +18,7 @@ Mqtt::~Mqtt()
 string Mqtt::makeCommand(string message, string time)
 {
     string cmdTemplate = "mosquitto_pub -h " + brokerIP + " -t " + topic + " -m ";
-    string command = "{\\\"cmd\":\\\"" + message + "\\\"";
+    string command = "{\\\"cmd\\\":\\\"" + message + "\\\"";
 
     if (message == "stop")
     {
@@ -29,7 +29,7 @@ string Mqtt::makeCommand(string message, string time)
     }
     else
     {
-        command += ",\\\"time\\\":" + time + ",\\\"val\\\":1}";
+        command += ",\\\"val\\\":" + time + ",\\\"spd\\\":1}";
     }
     prevMessage = message;
     return cmdTemplate + command;

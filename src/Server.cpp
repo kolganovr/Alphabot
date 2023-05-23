@@ -238,7 +238,7 @@ void Server::choseAction()
             // Если угол больше порогового значения, то поворачиваем робота
             if (abs(angle) > dAngle)
             {
-                if (angle > 0)
+                if (angle < 0)
                 {
                     alphabot.setState(2); // RIGHT
                     command = "right";
